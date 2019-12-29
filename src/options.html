@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Thumbnail Grabber Options</title>
+  </head>
+  <body>
+    <h3>Grab method</h3>
+    <select id="grab-method">
+      <option>Open</option>
+      <option>Download</option>
+      <option>Copy to clipboard</option>
+    </select>
+    <h3>Context menu</h3>
+    <label><input type="checkbox" id="cx-open">Open thumbnail</label>
+    <br>
+    <label><input type="checkbox" id="cx-download">Download thumbnail</label>
+    <br>
+    <label><input type="checkbox" id="cx-copy">Copy thumbnail</label>
+    <br>
+    <br>
+    <div id="status" style="display: inline-block; opacity: 0;"></div>
+    <style>
+      @keyframes fade-out { /* referenced in js */
+        0% {
+          opacity: 100;
+        }
+        100% {
+          opacity: 0;
+        }
+      }
+    </style>
+    <script src="./options.js"></script>
+  </body>
+</html>
