@@ -10,8 +10,8 @@
   "content_scripts": [
     {
       "matches": [
-        "*://*.youtube.com/watch?*",
-        "*://*.soundcloud.com/*/*"
+        "*://*.youtube.com/*",
+        "*://*.soundcloud.com/*"
       ],
       "js": ["content-script.js"],
       "css": ["content-script.css"]
