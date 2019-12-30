@@ -7,6 +7,16 @@
 		"scripts": ["background.js"],
 		"persistent": false
 	},
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.youtube.com/watch?*",
+        "*://*.soundcloud.com/*/*"
+      ],
+      "js": ["content-script.js"],
+      "css": ["content-script.css"]
+    }
+  ],
   "options_ui": {
     "page": "options.html",
     "open_in_tab": false
@@ -19,7 +29,8 @@
     }
 	},
 	"permissions": [
-		"tabs",
-		"storage"
+		"storage",
+    "activeTab",
+    "https://*/*"
 	]
 }

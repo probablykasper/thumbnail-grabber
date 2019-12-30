@@ -1,0 +1,92 @@
+.thumbnail-grabber-prevent-scroll {
+  overflow: hidden;
+}
+
+#thumbnail-grabber {
+  display: flex;
+  position: fixed;
+  box-sizing: border-box;
+  z-index: 10000;
+  padding: 40px;
+  width: 100%;
+  height: 100%;
+  top: 0px;
+  right: 0px;
+  left: 0px;
+  bottom: 0px;
+  overflow-y: auto;
+  background-color: rgba(0, 0, 0, 0.5);
+  font-family: Rubik, Roboto, Arial, sans-serif;
+}
+
+#thumbnail-grabber-card {
+  background-color: #ffffff;
+  padding: 30px;
+  max-width: 730px;
+  margin: auto;
+}
+
+#thumbnail-grabber img {
+  max-width: 100%;
+  max-height: 500px;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
+}
+
+#thumbnail-grabber-buttons {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+#thumbnail-grabber-buttons div {
+  cursor: pointer;
+  padding: 10px 0px;
+  margin: 0px 12px;
+  width: 120px;
+  padding: 12px 0px;
+  position: relative;
+}
+
+#thumbnail-grabber-buttons div:first-child {
+  margin-left: 0px;
+}
+#thumbnail-grabber-buttons div:last-child {
+  margin-right: 0px;
+}
+
+#thumbnail-grabber-buttons div p {
+  color: #ffffff;
+  user-select: none;
+  text-align: center;
+  position: relative;
+  z-index: 1;
+  font-size: 14px;
+
+  /* fix for soundcloud */
+  line-height: normal;
+  margin-block-start: auto;
+  margin-block-end: auto;
+  margin-inline-start: auto;
+  margin-inline-end: auto;
+}
+
+#thumbnail-grabber-buttons div::before {
+  content: '';
+  pointer-events: none;
+  width: 100%;
+  height: 100%;
+  display: block;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  background: #000000;
+  opacity: 0.8;
+  transform: skew(-10deg, 0deg);
+  transition: 0.24s cubic-bezier(0.4, 0, 0.2, 1);
+  transition-property: transform, opacity;
+}
+
+#thumbnail-grabber-buttons div:hover::before {
+  transform: skew(-10deg, 0deg) translateZ(0px) scaleY(1.1);
+  opacity: 1;
+}
