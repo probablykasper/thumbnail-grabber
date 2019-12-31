@@ -81,7 +81,6 @@ function setup() {
 }
 
 var copyEventListener = function(e) {
-  console.log('copy');
   copy(url, function(err) {
     if (err) {
       console.error('error copying thumbnail: ', err);
@@ -92,7 +91,6 @@ var copyEventListener = function(e) {
   e.preventDefault();
 }
 var keydownEventListener = function(e) {
-  console.log('keydown');
   if (
     e.key == 'Escape' &&
     e.metaKey == false &&
@@ -100,7 +98,6 @@ var keydownEventListener = function(e) {
     e.ctrlKey == false &&
     e.shiftKey == false
   ) {
-    console.log('esclose');
     close();
   }
 }
@@ -115,6 +112,7 @@ function open() {
     notify('No thumbnail detected on this page');
   }
 }
+
 function close() {
   document.removeEventListener('keydown', keydownEventListener);
   document.removeEventListener('copy', copyEventListener);
@@ -122,6 +120,34 @@ function close() {
   document.body.classList.remove('thumbnail-grabber-prevent-scroll');
 }
 close();
+
+chrome.runtime.onMessage.addListener(function(msg) {
+  if (msg.type == 'open') {
+    open();
+  } else if (msg.type == 'download') {
+    var validUrl = setup();
+    if (!validUrl) notify('No thumbnail detected on this page');
+    download(url, filename, function(err) {
+      if (err) {
+        console.error('error downloading thumbnail: ', err);
+        notify('Error downloading thumbnail: '+err);
+      }
+      if (thumbnailGrabber.style.display != 'none') close();
+    });
+  } else if (msg.type == 'copy') {
+    var validUrl = setup();
+    if (!validUrl) notify('No thumbnail detected on this page');
+    copy(url, function(err) {
+      if (err) {
+        console.error('error copying thumbnail: ', err);
+        notify('Error copying thumbnail: '+err);
+      } else {
+        notify('Copied');
+      }
+      if (thumbnailGrabber.style.display != 'none') close();
+    });
+  }
+})
 
 thumbnailGrabber.addEventListener('click', function(e) {
   if (e.target == this) {
@@ -149,9 +175,6 @@ thumbnailGrabber.addEventListener('click', function(e) {
 
 document.body.appendChild(thumbnailGrabber);
 
-chrome.runtime.onMessage.addListener(function(msg) {
-  if (msg.type == 'open') open();
-})
 
 function getBlob(url, callback) { // callback(err, blob)
   var xhr = new XMLHttpRequest();

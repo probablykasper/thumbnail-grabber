@@ -35,5 +35,16 @@
 		"storage",
     "activeTab",
     "https://*/*"
-	]
+	],
+  "commands": {
+    "open": {
+      "description": "Open the Thumbnail Grabber popup on the current page"
+    },
+    "download": {
+      "description": "Download the thumbnail of the current page"
+    },
+    "copy": {
+      "description": "Copy the thumbnail of the current page to clipboard"
+    }
+  }
 }
