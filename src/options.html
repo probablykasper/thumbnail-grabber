@@ -10,6 +10,7 @@
       <option>Download</option>
       <option>Copy to clipboard</option>
     </select>
+
     <h3>Context menu</h3>
     <label><input type="checkbox" id="cx-open">Open thumbnail</label>
     <br>
@@ -17,7 +18,13 @@
     <br>
     <label><input type="checkbox" id="cx-copy">Copy thumbnail</label>
     <br>
-    <br>
+
+    <h3>Tips</h3>
+    <ul>
+      <li>CTRL/CMD + C copies the thumbnail when the Thumbnail Grabber popup is open.</li>
+      <li>ESC closes the Thumbnail Grabber popup.</li>
+    </ul>
+
     <div id="status" style="display: inline-block; opacity: 0;"></div>
     <style>
       @keyframes fade-out { /* referenced in js */

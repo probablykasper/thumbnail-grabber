@@ -80,7 +80,33 @@ function setup() {
   return true;
 }
 
+var copyEventListener = function(e) {
+  console.log('copy');
+  copy(url, function(err) {
+    if (err) {
+      console.error('error copying thumbnail: ', err);
+      notify('Error copying thumbnail: '+err);
+    }
+    close();
+  });
+  e.preventDefault();
+}
+var keydownEventListener = function(e) {
+  console.log('keydown');
+  if (
+    e.key == 'Escape' &&
+    e.metaKey == false &&
+    e.altKey == false &&
+    e.ctrlKey == false &&
+    e.shiftKey == false
+  ) {
+    console.log('esclose');
+    close();
+  }
+}
 function open() {
+  document.addEventListener('keydown', keydownEventListener);
+  document.addEventListener('copy', copyEventListener);
   var validUrl = setup();
   if (validUrl) {
     thumbnailGrabber.style.display = '';
@@ -90,6 +116,8 @@ function open() {
   }
 }
 function close() {
+  document.removeEventListener('keydown', keydownEventListener);
+  document.removeEventListener('copy', copyEventListener);
   thumbnailGrabber.style.display = 'none';
   document.body.classList.remove('thumbnail-grabber-prevent-scroll');
 }
