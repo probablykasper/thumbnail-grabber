@@ -2,6 +2,75 @@
   overflow: hidden;
 }
 
+@keyframes notification {
+  0% {
+    opacity: 0;
+    transform: translateX(10px);
+  }
+  5% {
+    opacity: 1;
+    transform: translateX(0px);
+  }
+  95% {
+    opacity: 1;
+    transform: translateX(0px);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+}
+.thumbnail-grabber-notification {
+  display: flex;
+  align-items: center;
+  position: fixed;
+  top: 0px;
+  right: 0px;
+  background-color: #ffffff;
+  max-width: 250px;
+  z-index: 10000;
+  margin: 20px;
+  padding: 20px;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23);
+  animation: notification 5s forwards;
+  transition: all 0.24s cubic-bezier(0.4, 0, 0.2, 1);
+  /* transition-property: transform, opacity; */
+  font-family: Rubik, Roboto, Arial, sans-serif;
+  font-size: 14px;
+}
+
+.thumbnail-grabber-notification-removing {
+  animation: none;
+  opacity: 0;
+  transform: translateX(-10px);
+}
+
+.thumbnail-grabber-notification > p:first-child {
+  position: absolute;
+  font-size: 16px;
+  top: 0px;
+  right: 0px;
+  margin: 0px;
+  color: #000000;
+  cursor: pointer;
+  text-align: center;
+  padding-right: 2px;
+  line-height: 22px;
+  height: 22px;
+  width: 22px;
+  font-family: Arial, sans-serif;
+}
+.thumbnail-grabber-notification > img {
+  width: 16px;
+  height: 16px;
+  margin-right: 10px;
+}
+
+.thumbnail-grabber-notification > p:last-child {
+  font-size: 13px;
+  margin: 0px;
+}
+
 #thumbnail-grabber {
   display: flex;
   position: fixed;

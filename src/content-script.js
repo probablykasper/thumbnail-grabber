@@ -1,5 +1,5 @@
 var thumbnailGrabber = document.createElement('div');
-thumbnailGrabber.id = "thumbnail-grabber";
+thumbnailGrabber.id = 'thumbnail-grabber';
 
 thumbnailGrabber.innerHTML = 
 `
@@ -11,7 +11,42 @@ thumbnailGrabber.innerHTML =
     <div><p>OPTIONS</p></div>
   </div>
 </div>
+`;
+notificationInnerHTML =
 `
+<p>x</p>
+<img></img>
+<p></p>
+`;
+
+function notify(msg) {
+  var notificationElement = document.createElement('div');
+  notificationElement.innerHTML = notificationInnerHTML;
+  notificationElement.classList.add('thumbnail-grabber-notification');
+  notificationElement.querySelector('p:last-child').textContent = msg;
+
+  notificationElement.querySelector('p:first-child').addEventListener('click', function(e) {
+    notificationElement.style.animation = 'none';
+    requestAnimationFrame(function() {
+      notificationElement.classList.add('thumbnail-grabber-notification-removing');
+      setTimeout(function() {
+        if (notificationElement.parentElement) {
+          notificationElement.parentElement.removeChild(notificationElement);
+        }
+      }, 500);
+    })
+  })
+
+  var icon = chrome.runtime.getURL('icon48.png');
+  notificationElement.querySelector('img').src = icon;
+  
+  document.body.appendChild(notificationElement);
+  setTimeout(function() {
+    if (notificationElement.parentElement) {
+      notificationElement.parentElement.removeChild(notificationElement);
+    }
+  }, 5000);
+}
 
 var img = thumbnailGrabber.querySelector('img');
 var url, filename;
@@ -48,12 +83,14 @@ function setup() {
 function open() {
   var validUrl = setup();
   if (validUrl) {
-    thumbnailGrabber.style.display = "";
+    thumbnailGrabber.style.display = '';
     document.body.classList.add('thumbnail-grabber-prevent-scroll');
+  } else {
+    notify('No thumbnail detected on this page');
   }
 }
 function close() {
-  thumbnailGrabber.style.display = "none";
+  thumbnailGrabber.style.display = 'none';
   document.body.classList.remove('thumbnail-grabber-prevent-scroll');
 }
 close();
@@ -63,11 +100,19 @@ thumbnailGrabber.addEventListener('click', function(e) {
     close();
   } else if (e.target.textContent == 'DOWNLOAD') {
     download(url, filename, function(err) {
-      if (err) console.error('error downloading: ', err);
+      if (err) {
+        console.error('error downloading thumbnail: ', err);
+        notify('Error downloading thumbnail: '+err);
+      }
+      close();
     });
   } else if (e.target.textContent == 'COPY') {
     copy(url, function(err) {
-      if (err) console.error('error downloading: ', err);
+      if (err) {
+        console.error('error copying thumbnail: ', err);
+        notify('Error copying thumbnail: '+err);
+      }
+      close();
     });
   } else if (e.target.textContent == 'OPTIONS') {
     chrome.runtime.sendMessage({type: 'options'});
@@ -77,7 +122,7 @@ thumbnailGrabber.addEventListener('click', function(e) {
 document.body.appendChild(thumbnailGrabber);
 
 chrome.runtime.onMessage.addListener(function(msg) {
-  if (msg.type == "open") open();
+  if (msg.type == 'open') open();
 })
 
 function getBlob(url, callback) { // callback(err, blob)
@@ -101,8 +146,8 @@ function download(url, filename, callback) {
   getBlob(url, function(err, blob) {
     if (err) return callback(true);
     try {
-      var a = document.createElement("a");
-      a.style = "display: none";
+      var a = document.createElement('a');
+      a.style = 'display: none';
       document.body.appendChild(a);
       var url = window.URL.createObjectURL(blob);
       a.href = url;
@@ -118,36 +163,38 @@ function download(url, filename, callback) {
 
 function createImage(options) {
   options = options || {};
-  const img = (Image) ? new Image() : document.createElement("img");
+  const img = (Image) ? new Image() : document.createElement('img');
   if (options.src) {
   	img.src = options.src;
   }
   return img;
 }
        
-function convertToPng(imgBlob) {
+function convertToPng(imgBlob, callback) {
   const imageUrl = window.URL.createObjectURL(imgBlob);
-  const canvas = document.createElement("canvas");
-  const ctx = canvas.getContext("2d");
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
   const imageEl = createImage({ src: imageUrl });
   imageEl.onload = (e) => {
     canvas.width = e.target.width;
     canvas.height = e.target.height;
     ctx.drawImage(e.target, 0, 0, e.target.width, e.target.height);
-    canvas.toBlob(copyToClipboard, "image/png", 1);
+    canvas.toBlob(function(blob) {
+      copyToClipboard(blob, callback);
+    }, 'image/png', 1);
   };      
 }
 
-async function copyToClipboard(pngBlob) {
+async function copyToClipboard(pngBlob, callback) {
     try {
       await navigator.clipboard.write([
         new ClipboardItem({
             [pngBlob.type]: pngBlob
         })
       ]);
-      console.log("Image copied");
+      callback(null);
     } catch (error) {
-        console.error(error);
+        callback(error);
     }
 }
 
@@ -155,12 +202,12 @@ async function copy(url, callback) {
   getBlob(url, function(err, imgBlob) {
     if (err) return callback(true);
     try {
-      if (url.endsWith(".jpg") || url.endsWith(".jpeg")) {
-        convertToPng(imgBlob);
-      } else if (url.endsWith(".png")) {
-        copyToClipboard(imgBlob);
+      if (url.endsWith('.jpg') || url.endsWith('.jpeg')) {
+        convertToPng(imgBlob, callback);
+      } else if (url.endsWith('.png')) {
+        copyToClipboard(imgBlob, callback);
       } else {
-        console.error("Format unsupported");
+        callback('Format unsupported');
       }
     } catch(err) {
       callback(err);
