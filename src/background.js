@@ -21,9 +21,7 @@ chrome.browserAction.onClicked.addListener(function() {
 chrome.runtime.onMessage.addListener(
   function(msg, sender, sendResponse) {
     if (msg.type == 'options') {
-      chrome.tabs.create({
-        url: 'chrome://extensions/?options='+chrome.runtime.id
-      });
+      chrome.runtime.openOptionsPage();
     }
   }
 );
