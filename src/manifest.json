@@ -1,41 +1,47 @@
 {
-	"manifest_version": 2,
-	"name": "Thumbnail Grabber",
-	"version": "1.0.0",
-	"description": "Download thumbnails and covers from YouTube and SoundCloud",
-	"background": {
-		"scripts": ["background.js"],
-		"persistent": false
-	},
+  "manifest_version": 2,
+  "name": "Thumbnail Grabber",
+  "version": "1.0.0",
+  "description": "Download thumbnails and covers from YouTube and SoundCloud",
+  "background": {
+    "scripts": [
+      "background.js"
+    ],
+    "persistent": false
+  },
   "content_scripts": [
     {
       "matches": [
         "*://*.youtube.com/*",
         "*://*.soundcloud.com/*"
       ],
-      "js": ["content-script.js"],
-      "css": ["content-script.css"]
+      "js": [
+        "content-script.js"
+      ],
+      "css": [
+        "content-script.css"
+      ]
     }
   ],
   "options_ui": {
     "page": "options.html",
     "open_in_tab": false
   },
-	"browser_action": {
-		"default_icon": {
-			"16": "icon16.png",
-			"48": "icon48.png",
-			"128": "icon128.png"
+  "browser_action": {
+    "default_icon": {
+      "16": "icon16.png",
+      "48": "icon48.png",
+      "128": "icon128.png"
     }
-	},
+  },
   "web_accessible_resources": [
     "icon48.png"
   ],
-	"permissions": [
-		"storage",
+  "permissions": [
+    "storage",
     "activeTab",
     "https://*/*"
-	],
+  ],
   "commands": {
     "open": {
       "description": "Open the Thumbnail Grabber popup on the current page"

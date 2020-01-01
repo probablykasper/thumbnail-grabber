@@ -1,0 +1,15 @@
+{
+  "scripts": {
+    "start": "node tasks.js --task extension:watch",
+    "zip": "node tasks.js --task extension:zip"
+  },
+  "devDependencies": {
+    "clarify": "^2.1.0",
+    "colorboy": "^2.0.0",
+    "del": "^5.1.0",
+    "glob": "^7.1.6",
+    "gulp-zip": "^5.0.1",
+    "inquirer": "^7.0.1",
+    "parcel-bundler": "^1.12.4"
+  }
+}
