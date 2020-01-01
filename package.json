@@ -3,7 +3,20 @@
     "start": "node tasks.js --task extension:watch",
     "zip": "node tasks.js --task extension:zip"
   },
+  "babel": {
+    "plugins": [
+      [
+        "@babel/plugin-transform-runtime",
+        {
+          "corejs": 2
+        }
+      ]
+    ]
+  },
   "devDependencies": {
+    "@babel/core": "^7.7.7",
+    "@babel/plugin-transform-runtime": "^7.7.6",
+    "@babel/runtime-corejs2": "^7.7.7",
     "clarify": "^2.1.0",
     "colorboy": "^2.0.0",
     "del": "^5.1.0",
@@ -11,5 +24,6 @@
     "gulp-zip": "^5.0.1",
     "inquirer": "^7.0.1",
     "parcel-bundler": "^1.12.4"
-  }
+  },
+  "dependencies": {}
 }

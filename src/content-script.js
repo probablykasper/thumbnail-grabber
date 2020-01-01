@@ -12,7 +12,7 @@ thumbnailGrabber.innerHTML =
   </div>
 </div>
 `;
-notificationInnerHTML =
+var notificationInnerHTML =
 `
 <p>x</p>
 <img></img>
