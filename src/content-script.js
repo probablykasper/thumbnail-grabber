@@ -72,12 +72,11 @@ function setup() {
     url = schemaObject.thumbnailUrl[0];
     filename = 'thumbnail';
   } else {
-    return false;
+    throw 'Not supported on this URL';
   }
   var fileExt = url.split('.').pop(-1);
   filename = filename+'.'+fileExt;
   img.src = url;
-  return true;
 }
 
 var copyEventListener = function(e) {
@@ -104,12 +103,13 @@ var keydownEventListener = function(e) {
 function open() {
   document.addEventListener('keydown', keydownEventListener);
   document.addEventListener('copy', copyEventListener);
-  var validUrl = setup();
-  if (validUrl) {
+  try {
+    setup();
     thumbnailGrabber.style.display = '';
     document.body.classList.add('thumbnail-grabber-prevent-scroll');
-  } else {
-    notify('No thumbnail detected on this page');
+  } catch(error) {
+    notify('Error grabbing thumbnail: '+error)
+    console.error('Error grabbing thumbnail: '+error)
   }
 }
 
@@ -125,18 +125,26 @@ chrome.runtime.onMessage.addListener(function(msg) {
   if (msg.type == 'open') {
     open();
   } else if (msg.type == 'download') {
-    var validUrl = setup();
-    if (!validUrl) notify('No thumbnail detected on this page');
+    try {
+      setup();
+    } catch(error) {
+      notify('Error grabbing thumbnail: '+error)
+      console.error('Error grabbing thumbnail: '+error)
+    }
     download(url, filename, function(err) {
       if (err) {
-        console.error('error downloading thumbnail: ', err);
         notify('Error downloading thumbnail: '+err);
+        console.error('error downloading thumbnail: ', err);
       }
       if (thumbnailGrabber.style.display != 'none') close();
     });
   } else if (msg.type == 'copy') {
-    var validUrl = setup();
-    if (!validUrl) notify('No thumbnail detected on this page');
+    try {
+      setup();
+    } catch(error) {
+      notify('Error grabbing thumbnail: '+error)
+      console.error('Error grabbing thumbnail: '+error)
+    }
     copy(url, function(err) {
       if (err) {
         console.error('error copying thumbnail: ', err);
