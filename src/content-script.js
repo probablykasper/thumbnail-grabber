@@ -53,7 +53,7 @@ var url, filename;
 function setup() {
   if (
     location.hostname.endsWith('soundcloud.com') &&
-    location.pathname.split('/').length-1 == 2
+    location.pathname.split('/').length-1 >= 2
   ) {
     var coverEl = document.querySelector('.interactive.sc-artwork > span');
     var bgImg = window.getComputedStyle(coverEl).backgroundImage;
