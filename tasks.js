@@ -1,4 +1,5 @@
 const src = 'src/**/*';
+const modules = 'src/modules/**/*'; // these won't be compiled
 
 const buildDest = 'build';
 const tempBuildDest = 'temp-build';
@@ -9,7 +10,6 @@ const extensionManifest = 'src/manifest.json';
 const extensionZipName = (manifest) => `${manifest.name}-${manifest.version}-chrome.zip`;
 
 require('clarify'); // hides nodecore from stack trace
-// const gulp = require('gulp');
 const del = require('del');
 const fs = require('fs');
 const path = require('path');
@@ -76,22 +76,23 @@ tasks['extension:zip'] = async (done, cancel) => {
     };
   }
 
-  fs.writeFileSync(extensionManifest, JSON.stringify(manifest, null, 2));
+  fs.writeFileSync(extensionManifest, JSON.stringify(manifest, null, 2)+'\n');
   await bundle({ watch: false, dest: tempBuildDest });
 
   const glob = require('glob');
   const files = await new Promise((resolve, reject) => {
-    glob(extensionZipSrc, (err, files) => {
-      // if (err) reject(err);
+    glob(extensionZipSrc, { nodir: true, ignore: modules }, (err, files) => {
       if (err) reject(err);
       resolve(files);
     });
   });
+  
   const yazl = require('yazl');
   const zipfile = new yazl.ZipFile();
   files.forEach((file) => {
-    zipfile.addFile(file, file);
+    zipfile.addFile(file, path.relative(tempBuildDest, file));
   });
+  
   zipfile.end();
   zipPath = path.join(extensionZipDest, zipFilename);
   await new Promise((resolve, reject) => {
