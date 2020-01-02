@@ -30,4 +30,3 @@ npm run zip
 
 # todo
 - shortcuts page link
-- ctx menus

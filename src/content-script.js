@@ -1,3 +1,24 @@
+const urlUtil = require('./modules/url-util.js');
+
+function xhr(url, requestType, responseType) {
+  return new Promise((resolve, reject) => {
+    var xhr = new XMLHttpRequest();
+    xhr.open(requestType, url);
+    xhr.responseType = responseType;
+    xhr.onload = function(event) {
+      if (this.status == 200) {
+        resolve(this.response);
+      } else {
+        reject('xhr got status '+this.status);
+      }
+    };
+    xhr.onerror = function(event) {
+      reject('xhr error:'+event.message);
+    };
+    xhr.send();
+  });
+}
+
 var thumbnailGrabber = document.createElement('div');
 thumbnailGrabber.id = 'thumbnail-grabber';
 
@@ -49,47 +70,83 @@ function notify(msg) {
 }
 
 var img = thumbnailGrabber.querySelector('img');
-var url, filename;
-function setup() {
-  if (
-    location.hostname.endsWith('soundcloud.com') &&
-    location.pathname.split('/').length-1 >= 2
-  ) {
-    var coverEl = document.querySelector('.interactive.sc-artwork > span');
-    var bgImg = window.getComputedStyle(coverEl).backgroundImage;
-    var bgImgUrl = bgImg.slice(4, -1);
-    if (bgImgUrl.endsWith('"') && bgImgUrl.endsWith('"')) {
-      bgImgUrl = bgImgUrl.slice(1, -1);
+var imgUrl, filename;
+async function setup(newUrl) {
+  const site = urlUtil.getSite(newUrl);
+  if (site == 'soundcloud') {
+    filename = 'Cover';
+    if (newUrl == location.href) {
+      // would be easier to grab the <meta og:image> element, but that does
+      // not update when we navigate to new pages
+      var coverEl = document.querySelector('.interactive.sc-artwork > span');
+      var bgImg = window.getComputedStyle(coverEl).backgroundImage;
+      var bgImgUrl = bgImg.slice(4, -1);
+      if (bgImgUrl.endsWith('"') && bgImgUrl.endsWith('"')) {
+        bgImgUrl = bgImgUrl.slice(1, -1);
+      }
+      imgUrl = bgImgUrl;
+    } else {
+      const oembedUrl = 'https://soundcloud.com/oembed?format=json&url='+newUrl;
+      const oembed = await xhr(oembedUrl, 'POST', 'json');
+      imgUrl = oembed.thumbnail_url;
     }
-    url = bgImgUrl;
-    filename = 'cover';
-  } else if (
-    location.hostname.endsWith('youtube.com') &&
-    location.pathname == '/watch' &&
-    new URL(location.href).searchParams.has('v')
-  ) {
-    var schemaObject = JSON.parse(document.getElementById('scriptTag').text);
-    url = schemaObject.thumbnailUrl[0];
-    filename = 'thumbnail';
+  } else if (site == 'youtube') {
+    filename = 'Thumbnail';
+    if (newUrl == location.href) {
+      // youtube updates the schemaObject when we navigate to new pages
+      const schemaObject = JSON.parse(document.getElementById('scriptTag').text);
+      imgUrl = schemaObject.thumbnailUrl[0];
+    } else {
+      const id = new URL(newUrl).searchParams.get('v');
+      const urls = [
+        `https://img.youtube.com/vi/${id}/maxresdefault.jpg`,
+        `https://img.youtube.com/vi/${id}/sddefault.jpg`,
+        `https://img.youtube.com/vi/${id}/hqdefault.jpg`,
+      ];
+      const urlPromises = urls.map(url =>
+        new Promise(async (resolve, reject) => {
+          try {
+            await xhr(url, 'GET', 'blob');
+            resolve(url);
+          } catch(err) {
+            reject(err);
+          }
+        })
+      );
+      let success;
+      let error = '';
+      for (const urlPromise of urlPromises) {
+        try {
+          const url = await urlPromise;
+          imgUrl = url;
+          success = true;
+          break;
+        } catch(err) {
+          error = err;
+          continue;
+        }
+      }
+      if (!success) throw `No thumbnail found (${error})`
+    }
   } else {
     throw 'Not supported on this URL';
   }
-  var fileExt = url.split('.').pop(-1);
+  const fileExt = imgUrl.split('.').pop(-1);
   filename = filename+'.'+fileExt;
-  img.src = url;
+  img.src = imgUrl;
 }
 
-var copyEventListener = function(e) {
-  copy(url, function(err) {
-    if (err) {
-      console.error('error copying thumbnail: ', err);
-      notify('Error copying thumbnail: '+err);
-    }
+const copyEventListener = function(e) {
+  e.preventDefault();
+  copy(imgUrl).then(() => {
+    close();
+  }).catch((error) => {
+    console.error('Error copying thumbnail: '+error);
+    notify('Error copying thumbnail: '+error);
     close();
   });
-  e.preventDefault();
 }
-var keydownEventListener = function(e) {
+const keydownEventListener = function(e) {
   if (
     e.key == 'Escape' &&
     e.metaKey == false &&
@@ -100,17 +157,11 @@ var keydownEventListener = function(e) {
     close();
   }
 }
-function open() {
+async function open() {
   document.addEventListener('keydown', keydownEventListener);
   document.addEventListener('copy', copyEventListener);
-  try {
-    setup();
-    thumbnailGrabber.style.display = '';
-    document.body.classList.add('thumbnail-grabber-prevent-scroll');
-  } catch(error) {
-    notify('Error grabbing thumbnail: '+error)
-    console.error('Error grabbing thumbnail: '+error)
-  }
+  thumbnailGrabber.style.display = '';
+  document.body.classList.add('thumbnail-grabber-prevent-scroll');
 }
 
 function close() {
@@ -121,61 +172,61 @@ function close() {
 }
 close();
 
-chrome.runtime.onMessage.addListener(function(msg) {
-  if (msg.type == 'open') {
-    open();
+chrome.runtime.onMessage.addListener(async function(msg, sender, sendResponse) {
+  if (msg.type == 'existance-check') {
+    sendResponse({injected: true});
+  } else if (msg.type == 'notify') {
+    notify(msg.notificationMsg);
+  } else if (msg.type == 'open') {
+    try {
+      await setup(msg.externalUrl || location.href);
+      open();
+    } catch(error) {
+      notify('Error opening thumbnail: '+error);
+      console.error('Error opening thumbnail: '+error);
+    }
   } else if (msg.type == 'download') {
     try {
-      setup();
+      await setup(msg.externalUrl || location.href);
+      await download(imgUrl, filename);
     } catch(error) {
-      notify('Error grabbing thumbnail: '+error)
-      console.error('Error grabbing thumbnail: '+error)
+      notify('Error downloading thumbnail: '+error)
+      console.error('Error downloading thumbnail: '+error)
     }
-    download(url, filename, function(err) {
-      if (err) {
-        notify('Error downloading thumbnail: '+err);
-        console.error('error downloading thumbnail: ', err);
-      }
-      if (thumbnailGrabber.style.display != 'none') close();
-    });
+    if (thumbnailGrabber.style.display != 'none') close();
   } else if (msg.type == 'copy') {
     try {
-      setup();
+      await setup(msg.externalUrl || location.href);
+      await copy(imgUrl);
+      notify('Copied');
     } catch(error) {
-      notify('Error grabbing thumbnail: '+error)
-      console.error('Error grabbing thumbnail: '+error)
+      notify('Error copying thumbnail: '+error)
+      console.error('Error copying thumbnail: '+error)
     }
-    copy(url, function(err) {
-      if (err) {
-        console.error('error copying thumbnail: ', err);
-        notify('Error copying thumbnail: '+err);
-      } else {
-        notify('Copied');
-      }
-      if (thumbnailGrabber.style.display != 'none') close();
-    });
+    if (thumbnailGrabber.style.display != 'none') close();
   }
 })
 
-thumbnailGrabber.addEventListener('click', function(e) {
+thumbnailGrabber.addEventListener('click', async function(e) {
   if (e.target == this) {
     close();
   } else if (e.target.textContent == 'DOWNLOAD') {
-    download(url, filename, function(err) {
-      if (err) {
-        console.error('error downloading thumbnail: ', err);
-        notify('Error downloading thumbnail: '+err);
-      }
-      close();
-    });
+    try {
+      await download(imgUrl, filename);
+    } catch(err) {
+      console.error('Error downloading thumbnail: '+err);
+      notify('Error downloading thumbnail: '+err);
+    }
+    close();
   } else if (e.target.textContent == 'COPY') {
-    copy(url, function(err) {
-      if (err) {
-        console.error('error copying thumbnail: ', err);
-        notify('Error copying thumbnail: '+err);
-      }
-      close();
-    });
+    try {
+      await copy(imgUrl);
+      notify('Copied');
+    } catch(err) {
+      console.error('Error copying thumbnail: '+err);
+      notify('Error copying thumbnail: '+err);
+    }
+    close();
   } else if (e.target.textContent == 'OPTIONS') {
     chrome.runtime.sendMessage({type: 'options'});
   }
@@ -183,41 +234,16 @@ thumbnailGrabber.addEventListener('click', function(e) {
 
 document.body.appendChild(thumbnailGrabber);
 
-
-function getBlob(url, callback) { // callback(err, blob)
-  var xhr = new XMLHttpRequest();
-  xhr.open('GET', url, true);
-  xhr.responseType = 'blob';
-  xhr.onload = function(event) {
-    if (this.status != 200) {
-      callback('xhr got status '+this.status, null);
-    } else {
-      callback(null, this.response);
-    }
-  };
-  xhr.onerror = function(event) {
-    callback('xhr error:', event, null);
-  };
-  xhr.send();
-}
-
-function download(url, filename, callback) {
-  getBlob(url, function(err, blob) {
-    if (err) return callback(true);
-    try {
-      var a = document.createElement('a');
-      a.style = 'display: none';
-      document.body.appendChild(a);
-      var url = window.URL.createObjectURL(blob);
-      a.href = url;
-      a.download = filename;
-      a.click();
-      document.body.removeChild(a);
-      callback();
-    } catch(err) {
-      callback(err)
-    }
-  });
+async function download(url, filename) {
+  const imgBlob = await xhr(url, 'GET', 'blob');
+  const a = document.createElement('a');
+  a.style = 'display: none';
+  document.body.appendChild(a);
+  var url = window.URL.createObjectURL(imgBlob);
+  a.href = url;
+  a.download = filename;
+  a.click();
+  document.body.removeChild(a);
 }
 
 function createImage(options) {
@@ -228,48 +254,48 @@ function createImage(options) {
   }
   return img;
 }
-       
-function convertToPng(imgBlob, callback) {
-  const imageUrl = window.URL.createObjectURL(imgBlob);
-  const canvas = document.createElement('canvas');
-  const ctx = canvas.getContext('2d');
-  const imageEl = createImage({ src: imageUrl });
-  imageEl.onload = (e) => {
-    canvas.width = e.target.width;
-    canvas.height = e.target.height;
-    ctx.drawImage(e.target, 0, 0, e.target.width, e.target.height);
-    canvas.toBlob(function(blob) {
-      copyToClipboard(blob, callback);
-    }, 'image/png', 1);
-  };      
-}
 
-async function copyToClipboard(pngBlob, callback) {
-    try {
-      await navigator.clipboard.write([
-        new ClipboardItem({
-            [pngBlob.type]: pngBlob
-        })
-      ]);
-      callback(null);
-    } catch (error) {
-        callback(error);
-    }
-}
-
-async function copy(url, callback) {
-  getBlob(url, function(err, imgBlob) {
-    if (err) return callback(true);
-    try {
-      if (url.endsWith('.jpg') || url.endsWith('.jpeg')) {
-        convertToPng(imgBlob, callback);
-      } else if (url.endsWith('.png')) {
-        copyToClipboard(imgBlob, callback);
-      } else {
-        callback('Format unsupported');
-      }
-    } catch(err) {
-      callback(err);
-    }
+async function convertToPng(imgBlob) {
+  return new Promise((resolve, reject) => {
+    const imageUrl = window.URL.createObjectURL(imgBlob);
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    const imageEl = createImage({ src: imageUrl });
+    imageEl.onload = (e) => {
+      canvas.width = e.target.width;
+      canvas.height = e.target.height;
+      ctx.drawImage(e.target, 0, 0, e.target.width, e.target.height);
+      canvas.toBlob(async function(blob) {
+        try {
+          await copyToClipboard(blob);
+          resolve();
+        } catch(error) {
+          if (error.message.toLowerCase().includes('document is not focused')) {
+            reject("Tab must be focused");
+          } else {
+            reject(error);
+          }
+        }
+      }, 'image/png', 1);
+    };      
   });
+}
+
+async function copyToClipboard(pngBlob) {
+  await navigator.clipboard.write([
+    new ClipboardItem({
+        [pngBlob.type]: pngBlob
+    })
+  ]);
+}
+
+async function copy(url) {
+  const imgBlob = await xhr(url, 'GET', 'blob');
+  if (url.endsWith('.jpg') || url.endsWith('.jpeg')) {
+    await convertToPng(imgBlob);
+  } else if (url.endsWith('.png')) {
+    await copyToClipboard(imgBlob);
+  } else {
+    throw 'Format not supported';
+  }
 }

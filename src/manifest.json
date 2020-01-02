@@ -39,6 +39,7 @@
   ],
   "permissions": [
     "storage",
+    "contextMenus",
     "activeTab",
     "https://*/*"
   ],

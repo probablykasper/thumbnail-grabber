@@ -1,21 +1,13 @@
-function open() {
+const urlUtil = require('./modules/url-util.js');
+
+function action(type, externalUrl) {
   chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
-    chrome.tabs.sendMessage(tabs[0].id, {type: 'open'});
-  });
-}
-function download() {
-  chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
-    chrome.tabs.sendMessage(tabs[0].id, {type: 'download'});
-  });
-}
-function copy() {
-  chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
-    chrome.tabs.sendMessage(tabs[0].id, {type: 'copy'});
+    chrome.tabs.sendMessage(tabs[0].id, {type, externalUrl});
   });
 }
 
 chrome.browserAction.onClicked.addListener(function() {
-  open();
+  action('open');
 });
 
 chrome.runtime.onMessage.addListener(
@@ -27,11 +19,105 @@ chrome.runtime.onMessage.addListener(
 );
 
 chrome.commands.onCommand.addListener(function(command) {
-  if (command == 'open') {
-    open();
-  } else if (command == 'download') {
-    download();
-  } else if (command == 'copy') {
-    copy();
+  if (['open', 'download', 'copy'].includes(command)) {
+    action(command);
   }
+});
+
+function createContextMenus(items) {
+  chrome.storage.local.get({
+  	grabMethod: 'Open',
+  	cxOpen: false,
+  	cxDownload: true,
+  	cxCopy: false,
+  }, function(items) {
+  	if (chrome.runtime.lastError) {
+  		console.warn('Error retrieving options:' + chrome.runtime.lastError.message);
+  	} else {
+      if (items.cxOpen == true) {
+        chrome.contextMenus.create({
+          id: 'open',
+          title: 'Open thumbnail',
+          documentUrlPatterns: urlUtil.specificMatchPatterns,
+          contexts: ['page', 'video'],
+        });
+        chrome.contextMenus.create({
+          id: 'open-link',
+          title: 'Open thumbnail',
+          targetUrlPatterns: urlUtil.specificMatchPatterns,
+          contexts: ['link'],
+        });
+      }
+      if (items.cxDownload == true) {
+        chrome.contextMenus.create({
+          id: 'download',
+          title: 'Download thumbnail',
+          documentUrlPatterns: urlUtil.specificMatchPatterns,
+          contexts: ['page', 'video'],
+        });
+        chrome.contextMenus.create({
+          id: 'download-link',
+          title: 'Download thumbnail',
+          targetUrlPatterns: urlUtil.specificMatchPatterns,
+          contexts: ['link'],
+        });
+      }
+      if (items.cxCopy == true) {
+        chrome.contextMenus.create({
+          id: 'copy',
+          title: 'Copy thumbnail',
+          documentUrlPatterns: urlUtil.specificMatchPatterns,
+          contexts: ['page', 'video'],
+        });
+        chrome.contextMenus.create({
+          id: 'copy-link',
+          title: 'Copy thumbnail',
+          targetUrlPatterns: urlUtil.specificMatchPatterns,
+          contexts: ['link'],
+        });
+      }
+  	}
+  })
+ 
+}
+
+function injectIfNotAlready(tabId, callback) {
+  chrome.tabs.sendMessage(tabId, {type: 'existance-check'}, response => {
+    if (chrome.runtime.lastError) {} // handle error by do nothing
+    if (response && response.injected) {
+      // already injected
+      callback(true);
+    } else {
+      // not yet injected, so do that
+      chrome.tabs.executeScript(tabId, {file: 'content-script.js'}, () => {
+        chrome.tabs.insertCSS(tabId, {file: 'content-script.css'}, () => {
+          callback();
+        });
+      });
+    }
+  }); 
+}
+
+chrome.contextMenus.onClicked.addListener((info, tab) => {
+  let menuItemId = info.menuItemId;
+  if (menuItemId.endsWith('-link')) {
+    menuItemId = menuItemId.slice(0, -'-link'.length)
+  }
+  injectIfNotAlready(tab.id, () => {
+    let url = info.linkUrl || info.pageUrl;
+    if (!urlUtil.getSite(url)) {
+      action('notify', `Error ${menuItemId}ing thumbnail: Not supported on this URL`);
+    }
+    if (info.linkUrl) {
+      action(menuItemId, url);
+    } else {
+      action(menuItemId);
+    }
+  });
+})
+
+createContextMenus();
+chrome.storage.onChanged.addListener(function(changes, areaName) {
+  chrome.contextMenus.removeAll();
+  createContextMenus();
 });
