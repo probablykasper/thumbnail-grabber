@@ -13,6 +13,7 @@ require('clarify'); // hides nodecore from stack trace
 const del = require('del');
 const fs = require('fs');
 const path = require('path');
+const glob = require('glob');
 const inquirer = require('inquirer');
 const Bundler = require('parcel-bundler');
 const { performance } = require('perf_hooks');
@@ -24,7 +25,13 @@ tasks = {};
 
 async function bundle (options) {
   del.sync(options.dest);
-  const bundler = new Bundler(src, {
+  const srcFiles = await new Promise((resolve, reject) => {
+    glob(src, { nodir: true, ignore: modules }, (err, files) => {
+      if (err) reject(err);
+      resolve(files);
+    });
+  });
+  const bundler = new Bundler(srcFiles, {
     outDir: options.dest,
     target: 'browser',
     // pug.config.js gets cached, so turn caching off if it exists
@@ -79,7 +86,6 @@ tasks['extension:zip'] = async (done, cancel) => {
   fs.writeFileSync(extensionManifest, JSON.stringify(manifest, null, 2)+'\n');
   await bundle({ watch: false, dest: tempBuildDest });
 
-  const glob = require('glob');
   const files = await new Promise((resolve, reject) => {
     glob(extensionZipSrc, { nodir: true, ignore: modules }, (err, files) => {
       if (err) reject(err);
