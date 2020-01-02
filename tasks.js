@@ -31,7 +31,7 @@ async function bundle (options) {
     cache: !fs.existsSync('pug.config.js'),
     logLevel: 3, // 3 = everything, 2 = warnings & errors, 1 = errors
     hmr: false,
-    // sourceMaps: true,
+    sourceMaps: true,
     // minify: false, // needs to be false for sourcemaps to work
     watch: options.watch,
   });

@@ -1,5 +1,22 @@
 const urlUtil = require('./modules/url-util.js');
 
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+  if (!changeInfo.url) return;
+  if (urlUtil.getSite(changeInfo.url)) {
+    chrome.browserAction.setIcon({
+      path: {
+        "128": "icon128.png"
+      }
+    })
+  } else {
+    chrome.browserAction.setIcon({
+      path: {
+        "128": "icon128-gray.png"
+      }
+    })
+  }
+});
+
 function action(type, externalUrl) {
   chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
     chrome.tabs.sendMessage(tabs[0].id, {type, externalUrl});
@@ -7,6 +24,7 @@ function action(type, externalUrl) {
 }
 
 chrome.browserAction.onClicked.addListener(function() {
+  console.log('OPEN');
   action('open');
 });
 

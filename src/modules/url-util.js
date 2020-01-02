@@ -6,7 +6,6 @@ var sites = [
     checkUrl: (url) =>
       url.hostname.endsWith('soundcloud.com')
       && url.pathname.split('/').length-1 >= 2
-    ,
   },
   {
     name: 'youtube',
@@ -16,7 +15,6 @@ var sites = [
       url.hostname.endsWith('youtube.com')
       && url.pathname == '/watch'
       && url.searchParams.has('v')
-    ,
   }
 ];
 
