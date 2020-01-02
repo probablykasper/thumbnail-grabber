@@ -49,3 +49,9 @@ document.getElementById('grab-method').addEventListener('change', save);
 document.getElementById('cx-open').addEventListener('click', save);
 document.getElementById('cx-download').addEventListener('click', save);
 document.getElementById('cx-copy').addEventListener('click', save);
+
+document.getElementById('shortcuts-link').addEventListener('click', () => {
+  chrome.tabs.create({
+    url: 'chrome://extensions/configureCommands',
+  });
+});
