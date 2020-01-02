@@ -136,6 +136,7 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
 
 createContextMenus();
 chrome.storage.onChanged.addListener(function(changes, areaName) {
-  chrome.contextMenus.removeAll();
-  createContextMenus();
+  chrome.contextMenus.removeAll(() => {
+    createContextMenus();
+  });
 });
