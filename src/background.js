@@ -56,13 +56,13 @@ function createContextMenus(items) {
         chrome.contextMenus.create({
           id: 'open',
           title: 'Open thumbnail',
-          documentUrlPatterns: urlUtil.specificMatchPatterns,
+          documentUrlPatterns: urlUtil.matchPatterns,
           contexts: ['page', 'video'],
         });
         chrome.contextMenus.create({
           id: 'open-link',
           title: 'Open thumbnail',
-          targetUrlPatterns: urlUtil.specificMatchPatterns,
+          targetUrlPatterns: urlUtil.matchPatterns,
           contexts: ['link'],
         });
       }
@@ -70,13 +70,13 @@ function createContextMenus(items) {
         chrome.contextMenus.create({
           id: 'download',
           title: 'Download thumbnail',
-          documentUrlPatterns: urlUtil.specificMatchPatterns,
+          documentUrlPatterns: urlUtil.matchPatterns,
           contexts: ['page', 'video'],
         });
         chrome.contextMenus.create({
           id: 'download-link',
           title: 'Download thumbnail',
-          targetUrlPatterns: urlUtil.specificMatchPatterns,
+          targetUrlPatterns: urlUtil.matchPatterns,
           contexts: ['link'],
         });
       }
@@ -84,13 +84,13 @@ function createContextMenus(items) {
         chrome.contextMenus.create({
           id: 'copy',
           title: 'Copy thumbnail',
-          documentUrlPatterns: urlUtil.specificMatchPatterns,
+          documentUrlPatterns: urlUtil.matchPatterns,
           contexts: ['page', 'video'],
         });
         chrome.contextMenus.create({
           id: 'copy-link',
           title: 'Copy thumbnail',
-          targetUrlPatterns: urlUtil.specificMatchPatterns,
+          targetUrlPatterns: urlUtil.matchPatterns,
           contexts: ['link'],
         });
       }

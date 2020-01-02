@@ -1,16 +1,14 @@
 var sites = [
   {
     name: 'soundcloud',
-    matchPattern: '*://*.soundcloud.com/*',
-    specificMatchPattern: '*://*.soundcloud.com/*/*',
+    matchPattern: '*://*.soundcloud.com/*/*',
     checkUrl: (url) =>
       url.hostname.endsWith('soundcloud.com')
       && url.pathname.split('/').length-1 >= 2
   },
   {
     name: 'youtube',
-    matchPattern: '*://*.youtube.com/*',
-    specificMatchPattern: '*://*.youtube.com/watch?*',
+    matchPattern: '*://*.youtube.com/watch?*',
     checkUrl: (url) =>
       url.hostname.endsWith('youtube.com')
       && url.pathname == '/watch'
@@ -19,10 +17,9 @@ var sites = [
 ];
 
 const matchPatterns = [];
-const specificMatchPatterns = [];
 for (const site of sites) {
   matchPatterns.push(site.matchPattern);
-  specificMatchPatterns.push(site.specificMatchPattern);
+  matchPatterns.push(site.matchPattern);
 }
 module.exports = {
   getSite: (url) => {
@@ -33,5 +30,4 @@ module.exports = {
     }
   },
   matchPatterns,
-  specificMatchPatterns,
 }
