@@ -27,6 +27,3 @@ Zip the extension into `/dist`, ready to be uploaded to the Chrome Web Store and
 ```
 npm run zip
 ```
-
-# todo
-- shortcuts page link
