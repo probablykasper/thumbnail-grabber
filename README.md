@@ -5,6 +5,7 @@
   Thumbnail Grabber
 </h1>
 <p align="center">Chrome extension for grabbing thumbnails/covers from YouTube and SoundCloud.</p>
+<br>
 
 # Dev Instructions
 
