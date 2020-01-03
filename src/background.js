@@ -2,23 +2,27 @@ const urlUtil = require('./modules/url-util.js');
 
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   if (!changeInfo.url) return;
-  if (urlUtil.getSite(changeInfo.url)) {
-    chrome.browserAction.setIcon({
-      path: {
-        "16": "icon16.png",
-        "48": "icon48.png",
-        "128": "icon128.png"
-      }
-    })
-  } else {
-    chrome.browserAction.setIcon({
-      path: {
-        "16": "icon16-gray.png",
-        "48": "icon48-gray.png",
-        "128": "icon128-gray.png"
-      }
-    })
-  }
+  chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
+    if (urlUtil.getSite(changeInfo.url)) {
+      chrome.browserAction.setIcon({
+        path: {
+          "16": "icon16.png",
+          "48": "icon48.png",
+          "128": "icon128.png"
+        },
+        tabId: tabs[0].id,
+      })
+    } else {
+      chrome.browserAction.setIcon({
+        path: {
+          "16": "icon16-gray.png",
+          "48": "icon48-gray.png",
+          "128": "icon128-gray.png"
+        },
+        tabId: tabs[0].id,
+      })
+    }
+  });
 });
 
 function action(tabId, type, externalUrl) {
