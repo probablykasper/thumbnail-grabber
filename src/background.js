@@ -21,15 +21,20 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   }
 });
 
-function action(type, externalUrl) {
-  chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
-    chrome.tabs.sendMessage(tabs[0].id, {type, externalUrl});
+function action(tabId, type, externalUrl) {
+  injectIfNotAlready(tabId, () => {
+    chrome.tabs.sendMessage(tabId, {type, externalUrl});
   });
 }
 
-chrome.browserAction.onClicked.addListener(function() {
-  console.log('OPEN');
-  action('open');
+function actionInCurrentTab(type, externalUrl) {
+  chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
+    action(tabs[0].id, command);
+  });
+}
+
+chrome.browserAction.onClicked.addListener(function(tab) {
+  action(tab.id, 'open');
 });
 
 chrome.runtime.onMessage.addListener(
@@ -42,7 +47,7 @@ chrome.runtime.onMessage.addListener(
 
 chrome.commands.onCommand.addListener(function(command) {
   if (['open', 'download', 'copy'].includes(command)) {
-    action(command);
+    actionInCurrentTab(command);
   }
 });
 
@@ -125,17 +130,15 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
   if (menuItemId.endsWith('-link')) {
     menuItemId = menuItemId.slice(0, -'-link'.length)
   }
-  injectIfNotAlready(tab.id, () => {
-    let url = info.linkUrl || info.pageUrl;
-    if (!urlUtil.getSite(url)) {
-      action('notify', `Error ${menuItemId}ing thumbnail: Not supported on this URL`);
-    }
-    if (info.linkUrl) {
-      action(menuItemId, url);
-    } else {
-      action(menuItemId);
-    }
-  });
+  let url = info.linkUrl || info.pageUrl;
+  if (!urlUtil.getSite(url)) {
+    actionInCurrentTab(tabs[0].id, 'notify', `Error ${menuItemId}ing thumbnail: Not supported on this URL`);
+  }
+  if (info.linkUrl) {
+    actionInCurrentTab(tabs[0].id, menuItemId, url);
+  } else {
+    actionInCurrentTab(tabs[0].id, menuItemId);
+  }
 })
 
 chrome.runtime.onInstalled.addListener(function() {
