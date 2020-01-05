@@ -2,9 +2,6 @@ const urlUtil = require('./modules/url-util.js');
 
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   if (changeInfo.status == 'complete') {
-    console.log(changeInfo);
-    console.log(tab);
-    console.log(tab.url);
     if (urlUtil.getSite(tab.url)) {
       chrome.browserAction.setIcon({
         path: {

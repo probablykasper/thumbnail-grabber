@@ -32,7 +32,8 @@
     "storage",
     "contextMenus",
     "activeTab",
-    "*://*/*",
+    "*://img.youtube.com/*",
+    "*://i1.sndcdn.com/*",
     "tabs"
   ],
   "commands": {

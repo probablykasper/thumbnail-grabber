@@ -1,4 +1,6 @@
 var sites = [
+  // when adding a manifest, make sure to add the domains of the thumbnail urls
+  // to manifest.json.permissions
   {
     name: 'soundcloud',
     matchPattern: '*://*.soundcloud.com/*/*',
