@@ -7,6 +7,10 @@
 <p align="center">Chrome extension for grabbing thumbnails/covers from YouTube and SoundCloud.</p>
 <br>
 
+Easily download/copy/open thumbnails and covers from YouTube and SoundCloud.
+
+You can click the extension icon, use keyboard shortcuts or right click the page or links. You can customize the keyboard shortcuts, what clicking the extension icon does, and what context menu items are visible.
+
 # Dev Instructions
 
 ### Folder info
