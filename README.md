@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://taskler.kasp.io/" title="Taskler"><img src="https://raw.githubusercontent.com/probablykasper/thumbnail-grabber/master/src/icon128.png" width="64"></a>
+  <img src="https://raw.githubusercontent.com/probablykasper/thumbnail-grabber/master/src/icon128.png" width="64">
 </p>
 <h1 align="center">
   Thumbnail Grabber

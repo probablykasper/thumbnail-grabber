@@ -32,7 +32,8 @@
     "storage",
     "contextMenus",
     "activeTab",
-    "https://*/*"
+    "*://*/*",
+    "tabs"
   ],
   "commands": {
     "open": {

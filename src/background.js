@@ -1,16 +1,21 @@
 const urlUtil = require('./modules/url-util.js');
 
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-  if (!changeInfo.url) return;
-  chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
-    if (urlUtil.getSite(changeInfo.url)) {
+  if (changeInfo.status == 'complete') {
+    console.log(changeInfo);
+    console.log(tab);
+    console.log(tab.url);
+    if (urlUtil.getSite(tab.url)) {
       chrome.browserAction.setIcon({
         path: {
           "16": "icon16.png",
           "48": "icon48.png",
           "128": "icon128.png"
         },
-        tabId: tabs[0].id,
+        tabId: tabId,
+      }, () => {
+        // handle error by doing nothing (error occurs when tabs are closed)
+        if (chrome.runtime.lastError) {};
       })
     } else {
       chrome.browserAction.setIcon({
@@ -19,26 +24,28 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
           "48": "icon48-gray.png",
           "128": "icon128-gray.png"
         },
-        tabId: tabs[0].id,
+        tabId: tabId,
+      }, () => {
+        if (chrome.runtime.lastError) {};
       })
     }
-  });
+  }
 });
 
-function action(tabId, type, externalUrl) {
+function action(tabId, options) {
   injectIfNotAlready(tabId, () => {
-    chrome.tabs.sendMessage(tabId, {type, externalUrl});
+    chrome.tabs.sendMessage(tabId, options);
   });
 }
 
-function actionInCurrentTab(type, externalUrl) {
+function actionInCurrentTab(options) {
   chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
-    action(tabs[0].id, command);
+    action(tabs[0].id, options);
   });
 }
 
 chrome.browserAction.onClicked.addListener(function(tab) {
-  action(tab.id, 'open');
+  action(tab.id, {type: 'open'});
 });
 
 chrome.runtime.onMessage.addListener(
@@ -51,7 +58,7 @@ chrome.runtime.onMessage.addListener(
 
 chrome.commands.onCommand.addListener(function(command) {
   if (['open', 'download', 'copy'].includes(command)) {
-    actionInCurrentTab(command);
+    actionInCurrentTab({type: command});
   }
 });
 
@@ -130,18 +137,16 @@ function injectIfNotAlready(tabId, callback) {
 }
 
 chrome.contextMenus.onClicked.addListener((info, tab) => {
-  let menuItemId = info.menuItemId;
-  if (menuItemId.endsWith('-link')) {
-    menuItemId = menuItemId.slice(0, -'-link'.length)
+  let actionType = info.menuItemId;
+  if (actionType.endsWith('-link')) {
+    actionType = actionType.slice(0, -'-link'.length)
   }
   let url = info.linkUrl || info.pageUrl;
-  if (!urlUtil.getSite(url)) {
-    actionInCurrentTab(tabs[0].id, 'notify', `Error ${menuItemId}ing thumbnail: Not supported on this URL`);
-  }
+  // if the url is incorrect, that error will be handled by the content script
   if (info.linkUrl) {
-    actionInCurrentTab(tabs[0].id, menuItemId, url);
+    actionInCurrentTab({type: actionType, externalUrl: url});
   } else {
-    actionInCurrentTab(tabs[0].id, menuItemId);
+    actionInCurrentTab({type: actionType});
   }
 })
 
