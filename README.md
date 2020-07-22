@@ -1,10 +1,14 @@
+
 <p align="center">
   <img src="https://raw.githubusercontent.com/probablykasper/thumbnail-grabber/master/src/icon128.png" width="64">
 </p>
-<h1 align="center">
+<h1 align="center" style="margin-top:0px">
   Thumbnail Grabber
 </h1>
 <p align="center">Chrome extension for grabbing thumbnails/covers from YouTube and SoundCloud.</p>
+<p align="center">
+  <img alt="Chrome Web Store" src="https://img.shields.io/chrome-web-store/users/gbpjnjieenljpncojgiboejmolbihdob?color=4DB0F2&logo=Google%20Chrome&logoColor=4DB0F2&style=flat-square">
+</p>
 <br>
 
 Easily download/copy/open thumbnails and covers from YouTube and SoundCloud.
