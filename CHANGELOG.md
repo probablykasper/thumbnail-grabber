@@ -1,3 +1,7 @@
+## 1.1.0 - 2020 Dec 11
+- Added support for Spotify
+- Added support for YouTube Music
+
 ## 1.0.2 - 2020 Jan 11
 - Fixed error occuring for YouTube thumbnails (due to xhr cors policy)
 
