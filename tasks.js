@@ -21,9 +21,9 @@ require('colorboy')
   .addColor('green', { color: '#00FE7C', style: ['bold'] })
   .addColor('red', { color: '#FF0066' })
   .addColor('cyan', { color: 'cyan', style: ['bold'] });
-tasks = {};
+const tasks = {};
 
-async function bundle (options) {
+async function bundle(options) {
   del.sync(options.dest);
   const srcFiles = await new Promise((resolve, reject) => {
     glob(src, { nodir: true, ignore: modules }, (err, files) => {
@@ -47,7 +47,7 @@ async function bundle (options) {
   return bundler;
 }
 
-tasks['extension:watch'] = async (done, cancel) => {
+tasks['extension:watch'] = async(done, cancel) => {
   return new Promise(() => {
     bundle({ watch: true, dest: buildDest });
     process.on('SIGINT', () => {
@@ -56,14 +56,14 @@ tasks['extension:watch'] = async (done, cancel) => {
   });
 }
 
-tasks['extension:zip'] = async (done, cancel) => {
+tasks['extension:zip'] = async(done, cancel) => {
   process.env.NODE_ENV = 'production';
   const manifest = JSON.parse(fs.readFileSync(extensionManifest));
   const answers = await inquirer.prompt({
     type: 'input',
     name: 'version',
     default: manifest.version,
-    message: 'version:'
+    message: 'version:',
   });
   manifest.version = answers.version;
 
@@ -74,13 +74,13 @@ tasks['extension:zip'] = async (done, cancel) => {
       type: 'confirm',
       name: 'replace',
       default: false,
-      message: 'That version already exists. Replace?'
+      message: 'That version already exists. Replace?',
     });
     if (answers.replace == false) {
       del.sync(tempBuildDest);
       cancel();
       return;
-    };
+    }
   }
 
   fs.writeFileSync(extensionManifest, JSON.stringify(manifest, null, 2)+'\n');
@@ -100,8 +100,9 @@ tasks['extension:zip'] = async (done, cancel) => {
   });
   
   zipfile.end();
-  zipPath = path.join(extensionZipDest, zipFilename);
+  const zipPath = path.join(extensionZipDest, zipFilename);
   await new Promise((resolve, reject) => {
+    if (!fs.existsSync(extensionZipDest)) fs.mkdirSync(extensionZipDest);
     zipfile.outputStream.pipe(fs.createWriteStream(zipPath)).on('close', () => {
       del.sync(tempBuildDest);
       resolve();
