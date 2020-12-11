@@ -6,7 +6,7 @@ var sites = [
     matchPattern: '*://soundcloud.com/*/*',
     checkUrl: (url) =>
       url.hostname.endsWith('soundcloud.com') // allow www
-      && url.pathname.split('/').length-1 >= 2
+      && url.pathname.split('/').length-1 >= 2,
   },
   {
     name: 'youtube music',
@@ -14,7 +14,7 @@ var sites = [
     checkUrl: (url) =>
       url.hostname == 'music.youtube.com'
       && url.pathname == '/watch'
-      && url.searchParams.has('v')
+      && url.searchParams.has('v'),
   },
   {
     name: 'youtube music playlist',
@@ -22,7 +22,7 @@ var sites = [
     checkUrl: (url) =>
       url.hostname == 'music.youtube.com'
       && url.pathname == '/playlist'
-      && url.searchParams.has('list')
+      && url.searchParams.has('list'),
   },
   {
     name: 'youtube',
@@ -31,7 +31,7 @@ var sites = [
       // allow www
       url.hostname.endsWith('youtube.com')
       && url.pathname == '/watch'
-      && url.searchParams.has('v')
+      && url.searchParams.has('v'),
   },
   {
     name: 'spotify',
@@ -39,7 +39,7 @@ var sites = [
     checkUrl: (url) =>
       // allow www
       url.hostname == 'open.spotify.com'
-      && url.pathname.startsWith('/album')
+      && url.pathname.startsWith('/album'),
   },
   {
     name: 'spotify',
@@ -47,7 +47,7 @@ var sites = [
     checkUrl: (url) =>
       // allow www
       url.hostname == 'open.spotify.com'
-      && url.pathname.startsWith('/playlist')
+      && url.pathname.startsWith('/playlist'),
   },
 ];
 
@@ -60,7 +60,7 @@ module.exports = {
     for (const site of sites) {
       if (site.checkUrl(new URL(url))) {
         return site.name;
-      };
+      }
     }
   },
   matchPatterns,

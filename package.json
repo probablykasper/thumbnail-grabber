@@ -1,7 +1,8 @@
 {
   "scripts": {
     "start": "node tasks.js --task extension:watch",
-    "zip": "node tasks.js --task extension:zip"
+    "zip": "node tasks.js --task extension:zip",
+    "eslint": "eslint ."
   },
   "babel": {
     "plugins": [
@@ -15,6 +16,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.12.10",
+    "eslint": "^7.15.0",
     "@babel/plugin-transform-runtime": "^7.12.10",
     "@babel/runtime-corejs2": "^7.12.5",
     "clarify": "^2.1.0",

@@ -5,7 +5,7 @@ function xhr(url, requestType, responseType) {
     var xhr = new XMLHttpRequest();
     xhr.open(requestType, url);
     xhr.responseType = responseType;
-    xhr.onload = function(event) {
+    xhr.onload = function() {
       if (this.status == 200) {
         resolve(this.response);
       } else {
@@ -46,7 +46,7 @@ function notify(msg) {
   notificationElement.classList.add('thumbnail-grabber-notification');
   notificationElement.querySelector('p:last-child').textContent = msg;
 
-  notificationElement.querySelector('p:first-child').addEventListener('click', function(e) {
+  notificationElement.querySelector('p:first-child').addEventListener('click', function() {
     notificationElement.style.animation = 'none';
     requestAnimationFrame(function() {
       notificationElement.classList.add('thumbnail-grabber-notification-removing');
@@ -75,22 +75,17 @@ async function getYouTubeThumbnail(id) {
     `https://img.youtube.com/vi/${id}/sddefault.jpg`,
     `https://img.youtube.com/vi/${id}/hqdefault.jpg`,
   ];
-  const urlPromises = urls.map(url =>
-    new Promise(async (resolve, reject) => {
-      try {
-        await xhr(url, 'GET', 'blob');
-        resolve(url);
-      } catch(err) {
-        reject(err);
-      }
-    })
-  );
+  const urlPromises = urls.map(url => {
+    return async function() {
+      await xhr(url, 'GET', 'blob');
+      return url;
+    }
+  });
   let error = '';
   for (const urlPromise of urlPromises) {
     try {
       const url = await urlPromise;
       return url;
-      break;
     } catch(err) {
       error = err;
       continue;
@@ -134,8 +129,8 @@ async function setup(newUrl) {
   } else if (site == 'youtube music') {
     if (newUrl != location.href) throw 'For YouTube Music, you need to be at the URL'
     filename = 'Cover';
-    var coverImg = document.querySelector('.ytmusic-player-bar.image');
-    var iurl = new URL(coverImg.src);
+    const coverImg = document.querySelector('.ytmusic-player-bar.image');
+    const iurl = new URL(coverImg.src);
     if (iurl.hostname == 'i.ytimg.com') {
       if (!iurl.pathname.startsWith('/vi/')) {
         throw "i.ytimg.com url doesn't start with /vi/"
@@ -148,8 +143,8 @@ async function setup(newUrl) {
   } else if (site == 'youtube music playlist') {
     if (newUrl != location.href) throw 'For YouTube Music, you need to be at the URL'
     filename = 'Cover';
-    var coverImg = document.querySelector('#img');
-    var iurl = new URL(coverImg.src);
+    const coverImg = document.querySelector('#img');
+    const iurl = new URL(coverImg.src);
     if (iurl.hostname == 'i.ytimg.com') {
       if (iurl.pathname.startsWith('/vi/')) {
         const id = iurl.pathname.substr(4, 11);
@@ -238,7 +233,7 @@ close();
 
 chrome.runtime.onMessage.addListener(async function(msg, sender, sendResponse) {
   if (msg.type == 'existance-check') {
-    sendResponse({injected: true});
+    sendResponse({ injected: true });
   } else if (msg.type == 'notify') {
     notify(msg.notificationMsg);
   } else if (msg.type == 'open') {
@@ -292,7 +287,7 @@ thumbnailGrabber.addEventListener('click', async function(e) {
     }
     close();
   } else if (e.target.textContent == 'OPTIONS') {
-    chrome.runtime.sendMessage({type: 'options'});
+    chrome.runtime.sendMessage({ type: 'options' });
   }
 });
 
@@ -303,8 +298,8 @@ async function download(url, filename) {
   const a = document.createElement('a');
   a.style = 'display: none';
   document.body.appendChild(a);
-  var url = window.URL.createObjectURL(imgBlob);
-  a.href = url;
+  var blobUrl = window.URL.createObjectURL(imgBlob);
+  a.href = blobUrl;
   a.download = filename;
   a.click();
   document.body.removeChild(a);
@@ -312,9 +307,9 @@ async function download(url, filename) {
 
 function createImage(options) {
   options = options || {};
-  const img = (Image) ? new Image() : document.createElement('img');
+  const img = Image ? new Image() : document.createElement('img');
   if (options.src) {
-  	img.src = options.src;
+    img.src = options.src;
   }
   return img;
 }
@@ -335,7 +330,7 @@ async function convertToPng(imgBlob) {
           resolve();
         } catch(error) {
           if (error.message.toLowerCase().includes('document is not focused')) {
-            reject("Tab must be focused");
+            reject('Tab must be focused');
           } else {
             reject(error);
           }
@@ -347,9 +342,10 @@ async function convertToPng(imgBlob) {
 
 async function copyToClipboard(pngBlob) {
   await navigator.clipboard.write([
+    // eslint-disable-next-line no-undef
     new ClipboardItem({
-        [pngBlob.type]: pngBlob
-    })
+      [pngBlob.type]: pngBlob,
+    }),
   ]);
 }
 
