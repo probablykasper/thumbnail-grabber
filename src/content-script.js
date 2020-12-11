@@ -69,6 +69,47 @@ function notify(msg) {
   }, 5000);
 }
 
+async function getYouTubeThumbnail(id) {
+  const urls = [
+    `https://img.youtube.com/vi/${id}/maxresdefault.jpg`,
+    `https://img.youtube.com/vi/${id}/sddefault.jpg`,
+    `https://img.youtube.com/vi/${id}/hqdefault.jpg`,
+  ];
+  const urlPromises = urls.map(url =>
+    new Promise(async (resolve, reject) => {
+      try {
+        await xhr(url, 'GET', 'blob');
+        resolve(url);
+      } catch(err) {
+        reject(err);
+      }
+    })
+  );
+  let error = '';
+  for (const urlPromise of urlPromises) {
+    try {
+      const url = await urlPromise;
+      return url;
+      break;
+    } catch(err) {
+      error = err;
+      continue;
+    }
+  }
+  throw `No thumbnail found (${error})`
+}
+
+function googleUserContentUrl(urlObj) {
+  // This is a `googleusercontent.com` url, which ends in something
+  // like `=w60-h60-l90-rj`. Not sure what `l90` or `rj` mean, but it seems
+  // to be the same without them. We replace all of this with `=s0` to get
+  // the original size of the image.
+  // Info about `googleusercontent.com` urls:
+  // https://sites.google.com/site/picasaresources/Home/Picasa-FAQ/google-photos-1/how-to/how-to-get-a-direct-link-to-an-image
+  var imgPathname = urlObj.pathname.split('=')[0]+'=s0'
+  return urlObj.origin + imgPathname + urlObj.search + urlObj.hash
+}
+
 var img = thumbnailGrabber.querySelector('img');
 var imgUrl, filename;
 async function setup(newUrl) {
@@ -90,6 +131,33 @@ async function setup(newUrl) {
       const oembed = await xhr(oembedUrl, 'POST', 'json');
       imgUrl = oembed.thumbnail_url;
     }
+  } else if (site == 'youtube music') {
+    if (newUrl != location.href) throw 'For YouTube Music, you need to be at the URL'
+    filename = 'Cover';
+    var coverImg = document.querySelector('.ytmusic-player-bar.image');
+    var iurl = new URL(coverImg.src);
+    if (iurl.hostname == 'i.ytimg.com') {
+      if (!iurl.pathname.startsWith('/vi/')) {
+        throw "i.ytimg.com url doesn't start with /vi/"
+      }
+      const id = iurl.pathname.substr(4, 11);
+      imgUrl = await getYouTubeThumbnail(id);
+    } else {
+      imgUrl = googleUserContentUrl(iurl)
+    }
+  } else if (site == 'youtube music playlist') {
+    if (newUrl != location.href) throw 'For YouTube Music, you need to be at the URL'
+    filename = 'Cover';
+    var coverImg = document.querySelector('#img');
+    var iurl = new URL(coverImg.src);
+    if (iurl.hostname == 'i.ytimg.com') {
+      if (iurl.pathname.startsWith('/vi/')) {
+        const id = iurl.pathname.substr(4, 11);
+        imgUrl = await getYouTubeThumbnail(id);
+      }
+    } else {
+      imgUrl = googleUserContentUrl(iurl)
+    }
   } else if (site == 'youtube') {
     filename = 'Thumbnail';
     if (newUrl == location.href) {
@@ -98,41 +166,17 @@ async function setup(newUrl) {
       imgUrl = schemaObject.thumbnailUrl[0];
     } else {
       const id = new URL(newUrl).searchParams.get('v');
-      const urls = [
-        `https://img.youtube.com/vi/${id}/maxresdefault.jpg`,
-        `https://img.youtube.com/vi/${id}/sddefault.jpg`,
-        `https://img.youtube.com/vi/${id}/hqdefault.jpg`,
-      ];
-      const urlPromises = urls.map(url =>
-        new Promise(async (resolve, reject) => {
-          try {
-            await xhr(url, 'GET', 'blob');
-            resolve(url);
-          } catch(err) {
-            reject(err);
-          }
-        })
-      );
-      let success;
-      let error = '';
-      for (const urlPromise of urlPromises) {
-        try {
-          const url = await urlPromise;
-          imgUrl = url;
-          success = true;
-          break;
-        } catch(err) {
-          error = err;
-          continue;
-        }
-      }
-      if (!success) throw `No thumbnail found (${error})`
+      imgUrl = await getYouTubeThumbnail(id);
     }
   } else {
     throw 'Not supported on this URL';
   }
   const fileExt = imgUrl.split('.').pop(-1);
-  filename = filename+'.'+fileExt;
+  if (fileExt == 'jpg' || fileExt == 'png') {
+    filename = filename+'.'+fileExt;
+  } else {
+    filename = filename+'.jpg';
+  }
   img.src = imgUrl;
 }
 
@@ -154,6 +198,7 @@ const keydownEventListener = function(e) {
     e.ctrlKey == false &&
     e.shiftKey == false
   ) {
+    e.preventDefault();
     close();
   }
 }
@@ -291,11 +336,9 @@ async function copyToClipboard(pngBlob) {
 
 async function copy(url) {
   const imgBlob = await xhr(url, 'GET', 'blob');
-  if (url.endsWith('.jpg') || url.endsWith('.jpeg')) {
-    await convertToPng(imgBlob);
-  } else if (url.endsWith('.png')) {
+  if (url.endsWith('.png')) {
     await copyToClipboard(imgBlob);
   } else {
-    throw 'Format not supported';
+    await convertToPng(imgBlob);
   }
 }
