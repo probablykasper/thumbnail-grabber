@@ -168,6 +168,25 @@ async function setup(newUrl) {
       const id = new URL(newUrl).searchParams.get('v');
       imgUrl = await getYouTubeThumbnail(id);
     }
+  } else if (site == 'spotify') {
+    filename = 'Cover';
+    if (newUrl == location.href) {
+      const coverEl = document.querySelector('._4c838ef3d2b6da1a61669046bbfae3d1-scss');
+      if (coverEl.srcset) {
+        // For /album/ urls.
+        const srcset = coverEl.srcset.split(',');
+        // The last src in srcset is the highest res
+        const srcItem = srcset[srcset.length-1].trim();
+        const srcUrl = srcItem.split(' ')[0]
+        imgUrl = srcUrl
+      } else {
+        // For /playlist/ urls
+        imgUrl = coverEl.src
+      }
+    } else {
+      const id = new URL(newUrl).searchParams.get('v');
+      imgUrl = await getYouTubeThumbnail(id);
+    }
   } else {
     throw 'Not supported on this URL';
   }

@@ -33,13 +33,22 @@ var sites = [
       && url.pathname == '/watch'
       && url.searchParams.has('v')
   },
-  // {
-  //   name: 'spotify',
-  //   matchPattern: '*://open.spotify.com/album/*',
-  //   checkUrl: (url) =>
-  //     url.hostname.endsWith('open.spotify.com')
-  //     && url.pathname.startsWith('/album')
-  // },
+  {
+    name: 'spotify',
+    matchPattern: '*://open.spotify.com/album/*',
+    checkUrl: (url) =>
+      // allow www
+      url.hostname == 'open.spotify.com'
+      && url.pathname.startsWith('/album')
+  },
+  {
+    name: 'spotify',
+    matchPattern: '*://open.spotify.com/playlist/*',
+    checkUrl: (url) =>
+      // allow www
+      url.hostname == 'open.spotify.com'
+      && url.pathname.startsWith('/playlist')
+  },
 ];
 
 const matchPatterns = [];
