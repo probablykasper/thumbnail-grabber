@@ -3,3 +3,4 @@ build
 temp-build
 node_modules
 .cache
+dist
