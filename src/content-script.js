@@ -83,7 +83,8 @@ async function getYouTubeThumbnail(id) {
   let error = '';
   for (const urlPromise of urlPromises) {
     try {
-      const url = await urlPromise;
+      const url = await urlPromise();
+      console.log('URLLLLLLL', url);
       return url;
     } catch(err) {
       error = err;
@@ -105,7 +106,6 @@ function googleUserContentUrl(urlObj) {
 }
 
 var img = thumbnailGrabber.querySelector('img');
-var imageUrl;
 
 function getSite(newUrl) {
   const url = new URL(newUrl);
@@ -208,40 +208,29 @@ async function getImageUrl(newUrl) {
     imageUrl = await getImageUrlCustom(newUrl);
   } catch(error) {
     try {
-      imageUrl = await getOembedImageUrl();
+      imageUrl = await getOembedImageUrl(newUrl);
     } catch(oembedError) {
-      notify('Error downloading thumbnail: '+error);
-      console.error('Error downloading thumbnail: '+error);
+      notify('Error getting thumbnail: '+error);
+      console.error('Error getting thumbnail: '+error);
       return;
     }
   }
   if (!imageUrl) imageUrl = await getOembedImageUrl(newUrl);
   if (!imageUrl) throw 'Could not find any thumbnail';
-  console.log('imageUrl', imageUrl);
   lastImageUrl = imageUrl;
   return imageUrl;
 }
 
-function getFilename(newUrl, imageUrl) {
-  const site = getSite(newUrl);
+function getFilename(site, imageUrl) {
+  console.log(site, imageUrl);
   let filename = 'Thumbnail';
-  switch (site) {
-    case 'soundcloud':
-    case 'youtube music':
-    case 'youtube music playlist':
-    case 'spotify':
-      filename = 'Cover';
+  if (site.soundcloud || site.youtubeMusic || site.youtubeMusicPlaylist || site.spotify) {
+    filename = 'Cover';
   }
-  if (site == 'soundcloud') filename = 'Cover';
-  else if (site == 'youtube music') filename = 'Cover';
-  else if (site == 'youtube music playlist') filename = 'Cover';
-  else if (site == 'spotify') filename = 'Cover';
-  const fileExt = imageUrl.split('.').pop(-1);
-  if (fileExt == 'jpg' || fileExt == 'png') {
-    filename = filename+'.'+fileExt;
-  } else {
-    filename = filename+'.jpg';
-  }
+  if (imageUrl.endsWith('.jpg')) filename = filename+'.jpg';
+  else if (imageUrl.endsWith('.png')) filename = filename+'.png';
+  else filename = filename+'.jpg';
+
   return filename;
 }
 
@@ -282,8 +271,11 @@ function close() {
 }
 close();
 
+let lastFilename;
 async function setup(newUrl) {
-  imageUrl = await getImageUrl(newUrl);
+  const imageUrl = await getImageUrl(newUrl);
+  const site = getSite(newUrl);
+  lastFilename = getFilename(site, imageUrl);
   img.src = imageUrl;
   return imageUrl;
 }
@@ -304,8 +296,8 @@ chrome.runtime.onMessage.addListener(async function(msg, sender, sendResponse) {
   } else if (msg.type == 'download') {
     try {
       const imageUrl = await setup(msg.externalUrl || location.href);
-      const filename = getFilename(imageUrl);
-      await download(imageUrl, filename);
+      console.log('DOWNLOAD', imageUrl);
+      await download(imageUrl, lastFilename);
     } catch(error) {
       notify('Error downloading thumbnail: '+error);
       console.error('Error downloading thumbnail: '+error);
@@ -329,8 +321,7 @@ thumbnailGrabber.addEventListener('click', async function(e) {
     close();
   } else if (e.target.textContent == 'DOWNLOAD') {
     try {
-      const filename = getFilename(lastImageUrl);
-      await download(lastImageUrl, filename);
+      await download(lastImageUrl, lastFilename);
     } catch(err) {
       console.error('Error downloading thumbnail: '+err);
       notify('Error downloading thumbnail: '+err);
