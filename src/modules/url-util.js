@@ -55,6 +55,7 @@ const matchPatterns = [];
 for (const site of sites) {
   matchPatterns.push(site.matchPattern);
 }
+
 module.exports = {
   getSite: (url) => {
     for (const site of sites) {
