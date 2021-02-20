@@ -1,3 +1,8 @@
+## 1.2.1 - 2021 Feb 20
+- Fix Spotify covers being small
+- Always enable extension icon and context menu items
+- Some other fixes
+
 ## 1.2.0 - 2021 Feb 20
 - Added support for many new sites that support oembed thumbnails
 - Fixed Spotify support

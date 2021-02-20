@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "Thumbnail Grabber",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Download thumbnails and covers from YouTube, SoundCloud, Spotify, YouTube Music and more",
   "background": {
     "scripts": [
