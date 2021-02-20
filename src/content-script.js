@@ -1,5 +1,3 @@
-const urlUtil = require('./modules/url-util.js');
-
 function xhr(url, requestType, responseType) {
   return new Promise((resolve, reject) => {
     var xhr = new XMLHttpRequest();
@@ -109,27 +107,37 @@ function googleUserContentUrl(urlObj) {
 var img = thumbnailGrabber.querySelector('img');
 var imageUrl;
 
-let lastImageUrl;
-async function getImageUrl(newUrl) {
-  let url;
-  const site = urlUtil.getSite(newUrl);
-  if (site == 'soundcloud') {
-    if (newUrl == location.href) {
-      // would be easier to grab the <meta og:image> element, but that does
-      // not update when we navigate to new pages
-      var coverEl = document.querySelector('.interactive.sc-artwork > span');
-      var bgImg = window.getComputedStyle(coverEl).backgroundImage;
-      var bgImgUrl = bgImg.slice(4, -1);
-      if (bgImgUrl.endsWith('"') && bgImgUrl.endsWith('"')) {
-        bgImgUrl = bgImgUrl.slice(1, -1);
-      }
-      url = bgImgUrl;
-    } else {
-      const oembedUrl = 'https://soundcloud.com/oembed?format=json&url='+newUrl;
-      const oembed = await xhr(oembedUrl, 'POST', 'json');
-      url = oembed.thumbnail_url;
+function getSite(newUrl) {
+  const url = new URL(newUrl);
+  return {
+    soundcloud: url.hostname.endsWith('soundcloud.com'),
+    youtubeMusic: url.hostname == 'music.youtube.com'
+      && url.pathname == '/watch'
+      && url.searchParams.has('v'),
+    youtubeMusicPlaylist: url.hostname == 'music.youtube.com'
+      && url.pathname == '/playlist'
+      && url.searchParams.has('list'),
+    youtube: url.hostname.endsWith('youtube.com')
+      && !url.hostname.includes('music')
+      && url.pathname == '/watch'
+      && url.searchParams.has('v'),
+    spotify: url.hostname == 'open.spotify.com',
+  };
+}
+
+async function getImageUrlCustom(newUrl) {
+  const site = getSite(newUrl);
+  if (site.soundcloud && newUrl == location.href) {
+    // would be easier to grab the <meta og:image> element, but that does
+    // not update when we navigate to new pages
+    var coverEl = document.querySelector('.interactive.sc-artwork > span');
+    var bgImg = window.getComputedStyle(coverEl).backgroundImage;
+    var bgImgUrl = bgImg.slice(4, -1);
+    if (bgImgUrl.endsWith('"') && bgImgUrl.endsWith('"')) {
+      bgImgUrl = bgImgUrl.slice(1, -1);
     }
-  } else if (site == 'youtube music') {
+    return bgImgUrl;
+  } else if (site.youtubeMusic) {
     if (newUrl != location.href) throw 'For YouTube Music, you need to be at the URL';
     const coverImg = document.querySelector('.ytmusic-player-bar.image');
     const iurl = new URL(coverImg.src);
@@ -138,32 +146,32 @@ async function getImageUrl(newUrl) {
         throw "i.ytimg.com url doesn't start with /vi/";
       }
       const id = iurl.pathname.substr(4, 11);
-      url = await getYouTubeThumbnail(id);
+      return await getYouTubeThumbnail(id);
     } else {
-      url = googleUserContentUrl(iurl);
+      return googleUserContentUrl(iurl);
     }
-  } else if (site == 'youtube music playlist') {
+  } else if (site.youtubeMusicPlaylist) {
     if (newUrl != location.href) throw 'For YouTube Music, you need to be at the URL';
     const coverImg = document.querySelector('#img');
     const iurl = new URL(coverImg.src);
     if (iurl.hostname == 'i.ytimg.com') {
       if (iurl.pathname.startsWith('/vi/')) {
         const id = iurl.pathname.substr(4, 11);
-        url = await getYouTubeThumbnail(id);
+        return await getYouTubeThumbnail(id);
       }
     } else {
-      url = googleUserContentUrl(iurl);
+      return googleUserContentUrl(iurl);
     }
-  } else if (site == 'youtube') {
+  } else if (site.youtube) {
     if (newUrl == location.href) {
       // youtube updates the schemaObject when we navigate to new pages
       const schemaObject = JSON.parse(document.getElementById('scriptTag').text);
-      url = schemaObject.thumbnailUrl[0];
+      return schemaObject.thumbnailUrl[0];
     } else {
       const id = new URL(newUrl).searchParams.get('v');
-      url = await getYouTubeThumbnail(id);
+      return await getYouTubeThumbnail(id);
     }
-  } else if (site == 'spotify' && newUrl == location.href) {
+  } else if (site.spotify && newUrl == location.href) {
     const coverEl =
         document.querySelector('img._5d10f53f6ab203d3259e148b9f1c2278-scss[srcset]') ||
         document.querySelector('.main-view-container__scroll-node-child > section > div:first-child img[srcset]') ||
@@ -183,17 +191,39 @@ async function getImageUrl(newUrl) {
       return coverEl.src;
     }
   }
-    const origin = new URL(newUrl).origin;
-    const oembedUrl = origin+'/oembed?format=json&url='+newUrl;
-    const oembed = await xhr(oembedUrl, 'GET', 'json');
-    url = oembed.thumbnail_url;
+}
+
+async function getOembedImageUrl(newUrl) {
+  const origin = new URL(newUrl).origin;
+  const oembedUrl = origin+'/oembed?format=json&url='+newUrl;
+  const oembed = await xhr(oembedUrl, 'GET', 'json');
+  if (!oembed) return;
+  return oembed.thumbnail_url;
+}
+
+let lastImageUrl;
+async function getImageUrl(newUrl) {
+  let imageUrl;
+  try {
+    imageUrl = await getImageUrlCustom(newUrl);
+  } catch(error) {
+    try {
+      imageUrl = await getOembedImageUrl();
+    } catch(oembedError) {
+      notify('Error downloading thumbnail: '+error);
+      console.error('Error downloading thumbnail: '+error);
+      return;
+    }
   }
-  lastImageUrl = url;
-  return url;
+  if (!imageUrl) imageUrl = await getOembedImageUrl(newUrl);
+  if (!imageUrl) throw 'Could not find any thumbnail';
+  console.log('imageUrl', imageUrl);
+  lastImageUrl = imageUrl;
+  return imageUrl;
 }
 
 function getFilename(newUrl, imageUrl) {
-  const site = urlUtil.getSite(newUrl);
+  const site = getSite(newUrl);
   let filename = 'Thumbnail';
   switch (site) {
     case 'soundcloud':

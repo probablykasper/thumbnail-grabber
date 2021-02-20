@@ -39,7 +39,7 @@ async function bundle(options) {
     logLevel: 3, // 3 = everything, 2 = warnings & errors, 1 = errors
     hmr: false,
     sourceMaps: true,
-    // minify: false, // needs to be false for sourcemaps to work
+    minify: false, // needs to be false for sourcemaps to work
     watch: options.watch,
   });
   bundler.addAssetType('.json', require.resolve('./JSONAsset.js'));
