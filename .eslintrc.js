@@ -12,10 +12,10 @@ module.exports = {
   },
   ignorePatterns: ['**/node_modules'],
   rules: {
-    indent: ['error', 2],
-    quotes: ['error', 'single', { 'avoidEscape': true }],
+    indent: ['error', 2, { SwitchCase: 1 }],
+    quotes: ['error', 'single', { avoidEscape: true }],
     'comma-dangle': ['error', 'always-multiline'],
-    // semi: ['error', 'never'],
+    semi: ['error', 'always'],
     // 'no-unused-vars': [
     //   'error',
     //   { args: 'none' },
@@ -30,4 +30,4 @@ module.exports = {
       // objectsInArrays: true,
     }],
   },
-}
+};

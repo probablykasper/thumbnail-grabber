@@ -55,8 +55,8 @@ function notify(msg) {
           notificationElement.parentElement.removeChild(notificationElement);
         }
       }, 500);
-    })
-  })
+    });
+  });
 
   var icon = chrome.runtime.getURL('icon48.png');
   notificationElement.querySelector('img').src = icon;
@@ -79,7 +79,7 @@ async function getYouTubeThumbnail(id) {
     return async function() {
       await xhr(url, 'GET', 'blob');
       return url;
-    }
+    };
   });
   let error = '';
   for (const urlPromise of urlPromises) {
@@ -91,7 +91,7 @@ async function getYouTubeThumbnail(id) {
       continue;
     }
   }
-  throw `No thumbnail found (${error})`
+  throw `No thumbnail found (${error})`;
 }
 
 function googleUserContentUrl(urlObj) {
@@ -101,16 +101,18 @@ function googleUserContentUrl(urlObj) {
   // the original size of the image.
   // Info about `googleusercontent.com` urls:
   // https://sites.google.com/site/picasaresources/Home/Picasa-FAQ/google-photos-1/how-to/how-to-get-a-direct-link-to-an-image
-  var imgPathname = urlObj.pathname.split('=')[0]+'=s0'
-  return urlObj.origin + imgPathname + urlObj.search + urlObj.hash
+  var imgPathname = urlObj.pathname.split('=')[0]+'=s0';
+  return urlObj.origin + imgPathname + urlObj.search + urlObj.hash;
 }
 
 var img = thumbnailGrabber.querySelector('img');
-var imgUrl, filename;
-async function setup(newUrl) {
+var imageUrl;
+
+let lastImageUrl;
+async function getImageUrl(newUrl) {
+  let url;
   const site = urlUtil.getSite(newUrl);
   if (site == 'soundcloud') {
-    filename = 'Cover';
     if (newUrl == location.href) {
       // would be easier to grab the <meta og:image> element, but that does
       // not update when we navigate to new pages
@@ -120,51 +122,47 @@ async function setup(newUrl) {
       if (bgImgUrl.endsWith('"') && bgImgUrl.endsWith('"')) {
         bgImgUrl = bgImgUrl.slice(1, -1);
       }
-      imgUrl = bgImgUrl;
+      url = bgImgUrl;
     } else {
       const oembedUrl = 'https://soundcloud.com/oembed?format=json&url='+newUrl;
       const oembed = await xhr(oembedUrl, 'POST', 'json');
-      imgUrl = oembed.thumbnail_url;
+      url = oembed.thumbnail_url;
     }
   } else if (site == 'youtube music') {
-    if (newUrl != location.href) throw 'For YouTube Music, you need to be at the URL'
-    filename = 'Cover';
+    if (newUrl != location.href) throw 'For YouTube Music, you need to be at the URL';
     const coverImg = document.querySelector('.ytmusic-player-bar.image');
     const iurl = new URL(coverImg.src);
     if (iurl.hostname == 'i.ytimg.com') {
       if (!iurl.pathname.startsWith('/vi/')) {
-        throw "i.ytimg.com url doesn't start with /vi/"
+        throw "i.ytimg.com url doesn't start with /vi/";
       }
       const id = iurl.pathname.substr(4, 11);
-      imgUrl = await getYouTubeThumbnail(id);
+      url = await getYouTubeThumbnail(id);
     } else {
-      imgUrl = googleUserContentUrl(iurl)
+      url = googleUserContentUrl(iurl);
     }
   } else if (site == 'youtube music playlist') {
-    if (newUrl != location.href) throw 'For YouTube Music, you need to be at the URL'
-    filename = 'Cover';
+    if (newUrl != location.href) throw 'For YouTube Music, you need to be at the URL';
     const coverImg = document.querySelector('#img');
     const iurl = new URL(coverImg.src);
     if (iurl.hostname == 'i.ytimg.com') {
       if (iurl.pathname.startsWith('/vi/')) {
         const id = iurl.pathname.substr(4, 11);
-        imgUrl = await getYouTubeThumbnail(id);
+        url = await getYouTubeThumbnail(id);
       }
     } else {
-      imgUrl = googleUserContentUrl(iurl)
+      url = googleUserContentUrl(iurl);
     }
   } else if (site == 'youtube') {
-    filename = 'Thumbnail';
     if (newUrl == location.href) {
       // youtube updates the schemaObject when we navigate to new pages
       const schemaObject = JSON.parse(document.getElementById('scriptTag').text);
-      imgUrl = schemaObject.thumbnailUrl[0];
+      url = schemaObject.thumbnailUrl[0];
     } else {
       const id = new URL(newUrl).searchParams.get('v');
-      imgUrl = await getYouTubeThumbnail(id);
+      url = await getYouTubeThumbnail(id);
     }
   } else if (site == 'spotify') {
-    filename = 'Cover';
     if (newUrl == location.href) {
       const coverEl = document.querySelector('._4c838ef3d2b6da1a61669046bbfae3d1-scss');
       if (coverEl.srcset) {
@@ -172,39 +170,48 @@ async function setup(newUrl) {
         const srcset = coverEl.srcset.split(',');
         // The last src in srcset is the highest res
         const srcItem = srcset[srcset.length-1].trim();
-        const srcUrl = srcItem.split(' ')[0]
-        imgUrl = srcUrl
+        const srcUrl = srcItem.split(' ')[0];
+        url = srcUrl;
       } else {
         // For /playlist/ urls
-        imgUrl = coverEl.src
+        url = coverEl.src;
       }
     } else {
-      const id = new URL(newUrl).searchParams.get('v');
-      imgUrl = await getYouTubeThumbnail(id);
+      const oembedUrl = 'https://open.spotify.com/oembed?format=json&url='+newUrl;
+      const oembed = await xhr(oembedUrl, 'POST', 'json');
+      url = oembed.thumbnail_url;
     }
   } else {
     throw 'Not supported on this URL';
   }
-  const fileExt = imgUrl.split('.').pop(-1);
+  lastImageUrl = url;
+  return url;
+}
+
+function getFilename(newUrl, imageUrl) {
+  const site = urlUtil.getSite(newUrl);
+  let filename = 'Thumbnail';
+  switch (site) {
+    case 'soundcloud':
+    case 'youtube music':
+    case 'youtube music playlist':
+    case 'spotify':
+      filename = 'Cover';
+  }
+  if (site == 'soundcloud') filename = 'Cover';
+  else if (site == 'youtube music') filename = 'Cover';
+  else if (site == 'youtube music playlist') filename = 'Cover';
+  else if (site == 'spotify') filename = 'Cover';
+  const fileExt = imageUrl.split('.').pop(-1);
   if (fileExt == 'jpg' || fileExt == 'png') {
     filename = filename+'.'+fileExt;
   } else {
     filename = filename+'.jpg';
   }
-  img.src = imgUrl;
+  return filename;
 }
 
-const copyEventListener = function(e) {
-  e.preventDefault();
-  copy(imgUrl).then(() => {
-    close();
-  }).catch((error) => {
-    console.error('Error copying thumbnail: '+error);
-    notify('Error copying thumbnail: '+error);
-    close();
-  });
-}
-const keydownEventListener = function(e) {
+function keydownEventListener(e) {
   if (
     e.key == 'Escape' &&
     e.metaKey == false &&
@@ -215,6 +222,16 @@ const keydownEventListener = function(e) {
     e.preventDefault();
     close();
   }
+}
+function copyEventListener(e) {
+  e.preventDefault();
+  copy(lastImageUrl).then(() => {
+    close();
+  }).catch((error) => {
+    console.error('Error copying thumbnail: '+error);
+    notify('Error copying thumbnail: '+error);
+    close();
+  });
 }
 async function open() {
   document.addEventListener('keydown', keydownEventListener);
@@ -231,6 +248,12 @@ function close() {
 }
 close();
 
+async function setup(newUrl) {
+  imageUrl = await getImageUrl(newUrl);
+  img.src = imageUrl;
+  return imageUrl;
+}
+
 chrome.runtime.onMessage.addListener(async function(msg, sender, sendResponse) {
   if (msg.type == 'existance-check') {
     sendResponse({ injected: true });
@@ -238,40 +261,42 @@ chrome.runtime.onMessage.addListener(async function(msg, sender, sendResponse) {
     notify(msg.notificationMsg);
   } else if (msg.type == 'open') {
     try {
-      await setup(msg.externalUrl || location.href);
-      open();
+      const imageUrl = await setup(msg.externalUrl || location.href);
+      open(imageUrl);
     } catch(error) {
       notify('Error opening thumbnail: '+error);
       console.error('Error opening thumbnail: '+error);
     }
   } else if (msg.type == 'download') {
     try {
-      await setup(msg.externalUrl || location.href);
-      await download(imgUrl, filename);
+      const imageUrl = await setup(msg.externalUrl || location.href);
+      const filename = getFilename(imageUrl);
+      await download(imageUrl, filename);
     } catch(error) {
-      notify('Error downloading thumbnail: '+error)
-      console.error('Error downloading thumbnail: '+error)
+      notify('Error downloading thumbnail: '+error);
+      console.error('Error downloading thumbnail: '+error);
     }
     if (thumbnailGrabber.style.display != 'none') close();
   } else if (msg.type == 'copy') {
     try {
-      await setup(msg.externalUrl || location.href);
-      await copy(imgUrl);
+      const imageUrl = await setup(msg.externalUrl || location.href);
+      await copy(imageUrl);
       notify('Copied');
     } catch(error) {
-      notify('Error copying thumbnail: '+error)
-      console.error('Error copying thumbnail: '+error)
+      notify('Error copying thumbnail: '+error);
+      console.error('Error copying thumbnail: '+error);
     }
     if (thumbnailGrabber.style.display != 'none') close();
   }
-})
+});
 
 thumbnailGrabber.addEventListener('click', async function(e) {
   if (e.target == this) {
     close();
   } else if (e.target.textContent == 'DOWNLOAD') {
     try {
-      await download(imgUrl, filename);
+      const filename = getFilename(lastImageUrl);
+      await download(lastImageUrl, filename);
     } catch(err) {
       console.error('Error downloading thumbnail: '+err);
       notify('Error downloading thumbnail: '+err);
@@ -279,7 +304,7 @@ thumbnailGrabber.addEventListener('click', async function(e) {
     close();
   } else if (e.target.textContent == 'COPY') {
     try {
-      await copy(imgUrl);
+      await copy(lastImageUrl);
       notify('Copied');
     } catch(err) {
       console.error('Error copying thumbnail: '+err);

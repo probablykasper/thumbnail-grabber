@@ -6,7 +6,7 @@ function setStatus(msg, keep) {
     if (!keep) {
       status.style.animation = 'fade-out 1s forwards';
     }
-  })
+  });
 }
 
 function save() {
@@ -41,7 +41,7 @@ function restoreOptions() {
       document.getElementById('cx-download').checked = items.cxDownload;
       document.getElementById('cx-copy').checked = items.cxCopy;
     }
-  })
+  });
 }
 
 document.addEventListener('DOMContentLoaded', restoreOptions);
