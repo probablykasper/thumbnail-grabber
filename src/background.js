@@ -1,34 +1,3 @@
-const urlUtil = require('./modules/url-util.js');
-
-chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-  if (changeInfo.status == 'complete') {
-    if (urlUtil.getSite(tab.url)) {
-      chrome.browserAction.setIcon({
-        path: {
-          '16': 'icon16.png',
-          '48': 'icon48.png',
-          '128': 'icon128.png',
-        },
-        tabId: tabId,
-      }, () => {
-      // handle error by doing nothing (error occurs when tabs are closed)
-        if (chrome.runtime.lastError) {window.x;}
-      });
-    } else {
-      chrome.browserAction.setIcon({
-        path: {
-          '16': 'icon16-gray.png',
-          '48': 'icon48-gray.png',
-          '128': 'icon128-gray.png',
-        },
-        tabId: tabId,
-      }, () => {
-        if (chrome.runtime.lastError) {window.x;}
-      });
-    }
-  }
-});
-
 function action(tabId, options) {
   injectIfNotAlready(tabId, () => {
     chrome.tabs.sendMessage(tabId, options);
@@ -74,13 +43,11 @@ function createContextMenus() {
         chrome.contextMenus.create({
           id: 'open',
           title: 'Open thumbnail',
-          documentUrlPatterns: urlUtil.matchPatterns,
           contexts: ['page', 'video'],
         });
         chrome.contextMenus.create({
           id: 'open-link',
           title: 'Open thumbnail',
-          targetUrlPatterns: urlUtil.matchPatterns,
           contexts: ['link'],
         });
       }
@@ -88,13 +55,11 @@ function createContextMenus() {
         chrome.contextMenus.create({
           id: 'download',
           title: 'Download thumbnail',
-          documentUrlPatterns: urlUtil.matchPatterns,
           contexts: ['page', 'video'],
         });
         chrome.contextMenus.create({
           id: 'download-link',
           title: 'Download thumbnail',
-          targetUrlPatterns: urlUtil.matchPatterns,
           contexts: ['link'],
         });
       }
@@ -102,13 +67,11 @@ function createContextMenus() {
         chrome.contextMenus.create({
           id: 'copy',
           title: 'Copy thumbnail',
-          documentUrlPatterns: urlUtil.matchPatterns,
           contexts: ['page', 'video'],
         });
         chrome.contextMenus.create({
           id: 'copy-link',
           title: 'Copy thumbnail',
-          targetUrlPatterns: urlUtil.matchPatterns,
           contexts: ['link'],
         });
       }
