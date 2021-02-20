@@ -13,7 +13,7 @@
 </p>
 <br>
 
-Easily download/copy/open thumbnails and covers from YouTube, SoundCloud, Spotify and YouTube Music. Get it on the [Chrome Web Store](https://chrome.google.com/webstore/detail/thumbnail-grabber/gbpjnjieenljpncojgiboejmolbihdob).
+Easily download/copy/open thumbnails and covers from YouTube, SoundCloud, Spotify, YouTube Music and more. Get it on the [Chrome Web Store](https://chrome.google.com/webstore/detail/thumbnail-grabber/gbpjnjieenljpncojgiboejmolbihdob).
 
 You can click the extension icon, use keyboard shortcuts or right click the page or links. You can customize the keyboard shortcuts, what clicking the extension icon does, and what context menu items are visible.
 
