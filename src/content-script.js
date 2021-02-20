@@ -13,7 +13,8 @@ function xhr(url, requestType, responseType) {
       }
     };
     xhr.onerror = function(event) {
-      reject('xhr error:'+event.message);
+      console.log(event);
+      reject('xhr error: '+event.message);
     };
     xhr.send();
   });
@@ -162,27 +163,33 @@ async function getImageUrl(newUrl) {
       const id = new URL(newUrl).searchParams.get('v');
       url = await getYouTubeThumbnail(id);
     }
-  } else if (site == 'spotify') {
-    if (newUrl == location.href) {
-      const coverEl = document.querySelector('._4c838ef3d2b6da1a61669046bbfae3d1-scss');
-      if (coverEl.srcset) {
-        // For /album/ urls.
-        const srcset = coverEl.srcset.split(',');
-        // The last src in srcset is the highest res
-        const srcItem = srcset[srcset.length-1].trim();
-        const srcUrl = srcItem.split(' ')[0];
-        url = srcUrl;
-      } else {
-        // For /playlist/ urls
-        url = coverEl.src;
-      }
-    } else {
-      const oembedUrl = 'https://open.spotify.com/oembed?format=json&url='+newUrl;
-      const oembed = await xhr(oembedUrl, 'POST', 'json');
-      url = oembed.thumbnail_url;
-    }
+  // } else if (site == 'spotify') {
+  //   if (newUrl == location.href) {
+  //     const coverEl =
+  //       document.querySelector('img._5d10f53f6ab203d3259e148b9f1c2278-scss[srcset]') ||
+  //       document.querySelector('.main-view-container__scroll-node-child > section > div:first-child img[srcset]') ||
+  //       document.querySelector('.os-content img[srcset]');
+  //     if (coverEl && coverEl.srcset) {
+  //       // For /album/ urls.
+  //       const srcset = coverEl.srcset.split(',');
+  //       // The last src in srcset is the highest res
+  //       const srcItem = srcset[srcset.length-1].trim();
+  //       const srcUrl = srcItem.split(' ')[0];
+  //       url = srcUrl;
+  //     } else {
+  //       // For /playlist/ urls
+  //       url = coverEl.src;
+  //     }
+  //   } else {
+  //     const oembedUrl = 'https://open.spotify.com/oembed?format=json&url='+newUrl;
+  //     const oembed = await xhr(oembedUrl, 'GET', 'json');
+  //     url = oembed.thumbnail_url;
+  //   }
   } else {
-    throw 'Not supported on this URL';
+    const origin = new URL(newUrl).origin;
+    const oembedUrl = origin+'/oembed?format=json&url='+newUrl;
+    const oembed = await xhr(oembedUrl, 'GET', 'json');
+    url = oembed.thumbnail_url;
   }
   lastImageUrl = url;
   return url;
