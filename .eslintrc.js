@@ -16,6 +16,8 @@ module.exports = {
     quotes: ['error', 'single', { avoidEscape: true }],
     'comma-dangle': ['error', 'always-multiline'],
     semi: ['error', 'always'],
+    // 'no-underscore-dangle': 0,
+    'no-unused-vars': ['error', { 'argsIgnorePattern': '^_' }],
     // 'no-unused-vars': [
     //   'error',
     //   { args: 'none' },

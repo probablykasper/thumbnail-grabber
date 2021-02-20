@@ -5,26 +5,26 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
     if (urlUtil.getSite(tab.url)) {
       chrome.browserAction.setIcon({
         path: {
-          "16": "icon16.png",
-          "48": "icon48.png",
-          "128": "icon128.png"
+          '16': 'icon16.png',
+          '48': 'icon48.png',
+          '128': 'icon128.png',
         },
         tabId: tabId,
       }, () => {
-        // handle error by doing nothing (error occurs when tabs are closed)
-        if (chrome.runtime.lastError) {};
-      })
+      // handle error by doing nothing (error occurs when tabs are closed)
+        if (chrome.runtime.lastError) {window.x;}
+      });
     } else {
       chrome.browserAction.setIcon({
         path: {
-          "16": "icon16-gray.png",
-          "48": "icon48-gray.png",
-          "128": "icon128-gray.png"
+          '16': 'icon16-gray.png',
+          '48': 'icon48-gray.png',
+          '128': 'icon128-gray.png',
         },
         tabId: tabId,
       }, () => {
-        if (chrome.runtime.lastError) {};
-      })
+        if (chrome.runtime.lastError) {window.x;}
+      });
     }
   }
 });
@@ -36,39 +36,40 @@ function action(tabId, options) {
 }
 
 function actionInCurrentTab(options) {
-  chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
+  chrome.tabs.query({ active: true, currentWindow: true }, function(tabs){
     action(tabs[0].id, options);
   });
 }
 
 chrome.browserAction.onClicked.addListener(function(tab) {
-  action(tab.id, {type: 'open'});
+  action(tab.id, { type: 'open' });
 });
 
 chrome.runtime.onMessage.addListener(
-  function(msg, sender, sendResponse) {
+  // eslint-disable-next-line no-unused-vars
+  function(msg, _sender, _sendResponse) {
     if (msg.type == 'options') {
       chrome.runtime.openOptionsPage();
     }
-  }
+  },
 );
 
 chrome.commands.onCommand.addListener(function(command) {
   if (['open', 'download', 'copy'].includes(command)) {
-    actionInCurrentTab({type: command});
+    actionInCurrentTab({ type: command });
   }
 });
 
-function createContextMenus(items) {
+function createContextMenus() {
   chrome.storage.local.get({
-  	grabMethod: 'Open',
-  	cxOpen: false,
-  	cxDownload: true,
-  	cxCopy: false,
+    grabMethod: 'Open',
+    cxOpen: false,
+    cxDownload: true,
+    cxCopy: false,
   }, function(items) {
-  	if (chrome.runtime.lastError) {
-  		console.warn('Error retrieving options:' + chrome.runtime.lastError.message);
-  	} else {
+    if (chrome.runtime.lastError) {
+      console.warn('Error retrieving options:' + chrome.runtime.lastError.message);
+    } else {
       if (items.cxOpen == true) {
         chrome.contextMenus.create({
           id: 'open',
@@ -111,21 +112,21 @@ function createContextMenus(items) {
           contexts: ['link'],
         });
       }
-  	}
-  })
+    }
+  });
  
 }
 
 function injectIfNotAlready(tabId, callback) {
-  chrome.tabs.sendMessage(tabId, {type: 'existance-check'}, response => {
-    if (chrome.runtime.lastError) {} // handle error by do nothing
+  chrome.tabs.sendMessage(tabId, { type: 'existance-check' }, response => {
+    if (chrome.runtime.lastError) {window.x;} // handle error by do nothing
     if (response && response.injected) {
       // already injected
       callback(true);
     } else {
       // not yet injected, so do that
-      chrome.tabs.executeScript(tabId, {file: 'content-script.js'}, () => {
-        chrome.tabs.insertCSS(tabId, {file: 'content-script.css'}, () => {
+      chrome.tabs.executeScript(tabId, { file: 'content-script.js' }, () => {
+        chrome.tabs.insertCSS(tabId, { file: 'content-script.css' }, () => {
           callback();
         });
       });
@@ -133,24 +134,24 @@ function injectIfNotAlready(tabId, callback) {
   }); 
 }
 
-chrome.contextMenus.onClicked.addListener((info, tab) => {
+chrome.contextMenus.onClicked.addListener((info, _tab) => {
   let actionType = info.menuItemId;
   if (actionType.endsWith('-link')) {
-    actionType = actionType.slice(0, -'-link'.length)
+    actionType = actionType.slice(0, -'-link'.length);
   }
   let url = info.linkUrl || info.pageUrl;
   // if the url is incorrect, that error will be handled by the content script
   if (info.linkUrl) {
-    actionInCurrentTab({type: actionType, externalUrl: url});
+    actionInCurrentTab({ type: actionType, externalUrl: url });
   } else {
-    actionInCurrentTab({type: actionType});
+    actionInCurrentTab({ type: actionType });
   }
-})
+});
 
 chrome.runtime.onInstalled.addListener(function() {
   createContextMenus();
 });
-chrome.storage.onChanged.addListener(function(changes, areaName) {
+chrome.storage.onChanged.addListener(function(_changes, _areaName) {
   chrome.contextMenus.removeAll(() => {
     createContextMenus();
   });

@@ -2,7 +2,7 @@
   "scripts": {
     "start": "node tasks.js --task extension:watch",
     "zip": "node tasks.js --task extension:zip",
-    "eslint": "eslint ."
+    "lint": "eslint . --ignore-pattern build/**/*"
   },
   "babel": {
     "plugins": [
