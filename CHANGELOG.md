@@ -1,3 +1,8 @@
+## 1.2.0 - 2021 Feb 20
+- Added support for many new sites that support oembed thumbnails
+- Fixed Spotify support
+- Small design changes
+
 ## 1.1.0 - 2020 Dec 11
 - Added support for Spotify
 - Added support for YouTube Music
