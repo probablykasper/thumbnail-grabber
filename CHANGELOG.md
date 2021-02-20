@@ -1,3 +1,7 @@
+## 1.2.2 - 2021 Feb 20
+- Fixed downloading not working
+- Fixed YouTube sd thumbnails being preferred over hq
+
 ## 1.2.1 - 2021 Feb 20
 - Fix Spotify covers being small
 - Always enable extension icon and context menu items
