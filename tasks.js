@@ -54,7 +54,7 @@ tasks['extension:watch'] = async(done, cancel) => {
       cancel();
     });
   });
-}
+};
 
 tasks['extension:zip'] = async(done, cancel) => {
   process.env.NODE_ENV = 'production';
@@ -101,7 +101,7 @@ tasks['extension:zip'] = async(done, cancel) => {
   
   zipfile.end();
   const zipPath = path.join(extensionZipDest, zipFilename);
-  await new Promise((resolve, reject) => {
+  await new Promise((resolve) => {
     if (!fs.existsSync(extensionZipDest)) fs.mkdirSync(extensionZipDest);
     zipfile.outputStream.pipe(fs.createWriteStream(zipPath)).on('close', () => {
       del.sync(tempBuildDest);
@@ -109,13 +109,13 @@ tasks['extension:zip'] = async(done, cancel) => {
     });
   });
   done();
-}
+};
 
 async function runTask(taskName, ...args) {
   const task = tasks[taskName];
   const loggingTaskName = `'${taskName}'`.cyan;
   if (task) {
-    console.log(`Running task ${loggingTaskName}`)
+    console.log(`Running task ${loggingTaskName}`);
     try {
       const startTime = performance.now();
       task(

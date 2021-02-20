@@ -4,7 +4,7 @@ const { Asset } = require('parcel-bundler');
 // const Asset = require('../Asset');
 const path = require('path');
 const json5 = require('json5');
-const {minify} = require('terser');
+const { minify } = require('terser');
 
 class JSONAsset extends Asset {
   constructor(name, options) {
@@ -34,7 +34,7 @@ class JSONAsset extends Asset {
     return {
       type: 'js',
       value: code,
-    }
+    };
   }
 }
 
