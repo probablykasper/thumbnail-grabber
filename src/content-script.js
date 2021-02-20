@@ -71,8 +71,8 @@ function notify(msg) {
 async function getYouTubeThumbnail(id) {
   const urls = [
     `https://img.youtube.com/vi/${id}/maxresdefault.jpg`,
-    `https://img.youtube.com/vi/${id}/sddefault.jpg`,
     `https://img.youtube.com/vi/${id}/hqdefault.jpg`,
+    `https://img.youtube.com/vi/${id}/sddefault.jpg`,
   ];
   const urlPromises = urls.map(url => {
     return async function() {
