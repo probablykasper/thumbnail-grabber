@@ -1,3 +1,6 @@
+## 1.2.3 - 2022 Feb 1
+- Remove unnecessary tabs permission
+
 ## 1.2.2 - 2021 Feb 20
 - Fixed downloading not working
 - Fixed YouTube sd thumbnails being preferred over hq
