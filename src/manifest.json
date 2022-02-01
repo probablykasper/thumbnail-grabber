@@ -34,8 +34,7 @@
     "activeTab",
     "*://i.ytimg.com/*",
     "*://img.youtube.com/*",
-    "*://i1.sndcdn.com/*",
-    "tabs"
+    "*://i1.sndcdn.com/*"
   ],
   "commands": {
     "open": {

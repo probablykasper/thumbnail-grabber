@@ -15,16 +15,16 @@
     ]
   },
   "devDependencies": {
-    "@babel/core": "^7.12.17",
-    "eslint": "^7.20.0",
-    "@babel/plugin-transform-runtime": "^7.12.17",
-    "@babel/runtime-corejs2": "^7.12.18",
+    "@babel/core": "^7.16.12",
+    "eslint": "^8.8.0",
+    "@babel/plugin-transform-runtime": "^7.16.10",
+    "@babel/runtime-corejs2": "^7.16.7",
     "clarify": "^2.1.0",
     "colorboy": "^2.1.0",
     "del": "^6.0.0",
-    "glob": "^7.1.6",
-    "gulp-zip": "^5.0.2",
-    "inquirer": "^7.3.3",
-    "parcel-bundler": "^1.12.4"
+    "glob": "^7.2.0",
+    "gulp-zip": "^5.1.0",
+    "inquirer": "^8.2.0",
+    "parcel-bundler": "^1.12.5"
   }
 }
