@@ -93,8 +93,8 @@ function createContextMenus() {
 function injectIfNotAlready(tabId, callback) {
 	chrome.tabs.sendMessage(tabId, { type: 'existance-check' }, (response) => {
 		if (chrome.runtime.lastError) {
-			window.x;
-		} // handle error by do nothing
+			// handle error by do nothing
+		}
 		if (response && response.injected) {
 			// already injected
 			callback(true);
@@ -110,7 +110,7 @@ function injectIfNotAlready(tabId, callback) {
 }
 
 chrome.contextMenus.onClicked.addListener((info, _tab) => {
-	let actionType = info.menuItemId;
+	let actionType = String(info.menuItemId);
 	if (actionType.endsWith('-link')) {
 		actionType = actionType.slice(0, -'-link'.length);
 	}

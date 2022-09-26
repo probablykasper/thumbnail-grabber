@@ -21,9 +21,17 @@ function notify(msg) {
 	var notificationElement = document.createElement('div');
 	notificationElement.innerHTML = notificationInnerHTML;
 	notificationElement.classList.add('thumbnail-grabber-notification');
-	notificationElement.querySelector('p:last-child').textContent = msg;
+	const lastChild = notificationElement.querySelector('p:last-child')
+	if (!(lastChild instanceof HTMLElement)) {
+		throw alert('No p:last-child');
+	}
+	lastChild.textContent = msg;
 
-	notificationElement.querySelector('p:first-child').addEventListener(
+	const firstChild = notificationElement.querySelector('p:first-child')
+	if (!(firstChild instanceof HTMLElement)) {
+		throw alert('No p:first-child');
+	}
+	firstChild.addEventListener(
 		'click',
 		function () {
 			notificationElement.style.animation = 'none';
@@ -41,7 +49,11 @@ function notify(msg) {
 	);
 
 	var icon = chrome.runtime.getURL('icon48.png');
-	notificationElement.querySelector('img').src = icon;
+	const iconImgElement = notificationElement.querySelector('img')
+	if (!(iconImgElement instanceof HTMLElement)) {
+		throw alert('No iconImgElement');
+	}
+	iconImgElement.src = icon;
 
 	document.body.appendChild(notificationElement);
 	setTimeout(function () {
@@ -66,7 +78,7 @@ async function getYouTubeThumbnail(id) {
 			throw new Error(`Error getting thumbnail: ${response.status}`);
 		}
 	}
-	throw `No thumbnail found (${error})`;
+	throw 'No thumbnail found';
 }
 
 function googleUserContentUrl(urlObj) {
@@ -109,6 +121,9 @@ async function getImageUrlCustom(newUrl) {
 		// would be easier to grab the <meta og:image> element, but that does
 		// not update when we navigate to new pages
 		var coverEl = document.querySelector('.interactive.sc-artwork > span');
+		if (!(coverEl instanceof HTMLElement)) {
+			throw alert('Artwork element not found');
+		}
 		var bgImg = window.getComputedStyle(coverEl).backgroundImage;
 		var bgImgUrl = bgImg.slice(4, -1);
 		if (bgImgUrl.endsWith('"') && bgImgUrl.endsWith('"')) {
@@ -120,6 +135,9 @@ async function getImageUrlCustom(newUrl) {
 			throw 'For YouTube Music, you need to be at the URL';
 		}
 		const coverImg = document.querySelector('.ytmusic-player-bar.image');
+		if (!(coverImg instanceof HTMLImageElement)) {
+			throw alert('Player bar image not found');
+		}
 		const iurl = new URL(coverImg.src);
 		if (iurl.hostname === 'i.ytimg.com') {
 			if (!iurl.pathname.startsWith('/vi/')) {
@@ -135,6 +153,9 @@ async function getImageUrlCustom(newUrl) {
 			throw 'For YouTube Music, you need to be at the URL';
 		}
 		const coverImg = document.querySelector('#img');
+		if (!(coverImg instanceof HTMLImageElement)) {
+			throw alert('Image element not found');
+		}
 		const iurl = new URL(coverImg.src);
 		if (iurl.hostname === 'i.ytimg.com') {
 			if (iurl.pathname.startsWith('/vi/')) {
@@ -161,6 +182,9 @@ async function getImageUrlCustom(newUrl) {
 				'.main-view-container__scroll-node-child > section > div:first-child img',
 			) ||
 			document.querySelector('.os-content img');
+		if (!(coverEl instanceof HTMLImageElement)) {
+			throw alert('Image element not found');
+		}
 		if (coverEl && coverEl.srcset) {
 			// For /album/ urls.
 			const srcset = coverEl.srcset.split(',');
@@ -277,6 +301,9 @@ async function setup(newUrl) {
 	const imageUrl = await getImageUrl(newUrl);
 	const site = getSite(newUrl);
 	lastFilename = getFilename(site, imageUrl);
+	if (!img) {
+		throw alert('No img');
+	}
 	img.src = imageUrl;
 	return imageUrl;
 }
@@ -330,7 +357,9 @@ chrome.runtime.onMessage.addListener(async function (
 });
 
 thumbnailGrabber.addEventListener('click', async function (e) {
-	if (e.target === this) {
+	if (!(e.target instanceof HTMLElement)) {
+		alert('No thumbnailGrabber click target');
+	} else if (e.target === this) {
 		close();
 	} else if (e.target.textContent === 'DOWNLOAD') {
 		try {
@@ -364,7 +393,6 @@ async function download(url, filename) {
 	const imageResponse = await fetch(url);
 	const imgBlob = await imageResponse.blob();
 	const a = document.createElement('a');
-	a.style = 'display: none';
 	document.body.appendChild(a);
 	var blobUrl = window.URL.createObjectURL(imgBlob);
 	a.href = blobUrl;
@@ -382,13 +410,19 @@ function createImage(options) {
 	return img;
 }
 
-async function convertToPng(imgBlob) {
+async function convertToPng(imgBlob): Promise<void> {
 	return new Promise((resolve, reject) => {
 		const imageUrl = window.URL.createObjectURL(imgBlob);
 		const canvas = document.createElement('canvas');
 		const ctx = canvas.getContext('2d');
+		if (!ctx) {
+			throw alert('No 2d canvas ctx')
+		}
 		const imageEl = createImage({ src: imageUrl });
 		imageEl.onload = (e) => {
+			if (!(e.target instanceof HTMLImageElement)) {
+				throw alert('No imageEl target');
+			}
 			canvas.width = e.target.width;
 			canvas.height = e.target.height;
 			ctx.drawImage(e.target, 0, 0, e.target.width, e.target.height);

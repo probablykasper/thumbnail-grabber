@@ -14,6 +14,8 @@
   },
   "devDependencies": {
     "@parcel/config-webextension": "^2.7.0",
+    "@types/chrome": "^0.0.197",
+    "@types/firefox-webext-browser": "^94.0.1",
     "gulp": "^4.0.2",
     "gulp-zip": "^5.1.0",
     "parcel": "^2.7.0",

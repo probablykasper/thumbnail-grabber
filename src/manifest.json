@@ -5,7 +5,7 @@
   "description": "Download thumbnails and covers from YouTube, SoundCloud, Spotify, YouTube Music and more",
   "background": {
     "scripts": [
-      "background.js"
+      "background.ts"
     ],
     "persistent": false
   },
@@ -27,7 +27,7 @@
   },
   "web_accessible_resources": [
     "icon48.png",
-    "content-script.js",
+    "content-script.ts",
     "content-script.css"
   ],
   "permissions": [
