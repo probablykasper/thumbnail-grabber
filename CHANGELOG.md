@@ -2,6 +2,7 @@
 
 ## Next
 - Add Firefox support
+- Fix YouTube thumbnail quality selection
 
 ## 1.2.3 - 2022 Feb 1
 - Remove unnecessary tabs permission

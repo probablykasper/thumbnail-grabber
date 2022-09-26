@@ -1,23 +1,3 @@
-function xhr(url, requestType, responseType) {
-	return new Promise((resolve, reject) => {
-		var xhr = new XMLHttpRequest();
-		xhr.open(requestType, url);
-		xhr.responseType = responseType;
-		xhr.onload = function () {
-			if (this.status === 200) {
-				resolve(this.response);
-			} else {
-				reject(`xhr got status ${this.status}`);
-			}
-		};
-		xhr.onerror = function (event) {
-			console.log(event);
-			reject(`xhr error: ${event.message}`);
-		};
-		xhr.send();
-	});
-}
-
 var thumbnailGrabber = document.createElement('div');
 thumbnailGrabber.id = 'thumbnail-grabber';
 
@@ -72,32 +52,18 @@ function notify(msg) {
 }
 
 async function getYouTubeThumbnail(id) {
-	console.log('getYouTubeThumbnail');
 	const urls = [
 		`https://img.youtube.com/vi/${id}/maxresdefault.jpg`,
 		`https://img.youtube.com/vi/${id}/hqdefault.jpg`,
 		`https://img.youtube.com/vi/${id}/sddefault.jpg`,
 	];
-	const urlPromises = urls.map((url) => {
-		return async function () {
-			try {
-				// await xhr(url, 'blob');
-				await fetch(url);
-				return url;
-			} catch (error) {
-				console.log('thumbnail unavailable?', error)
-				throw error;
-			}
-		};
-	});
-	let error = '';
-	for (const urlPromise of urlPromises) {
-		try {
-			const url = await urlPromise();
-			console.log('URLLLLLLL', url);
+	for (const url of urls) {
+		const response = await fetch(url);
+		if (response.ok) {
+			console.log('YT thumbnail URL', url);
 			return url;
-		} catch (err) {
-			error = err;
+		} else if (response.status !== 404) {
+			throw new Error(`Error getting thumbnail: ${response.status}`);
 		}
 	}
 	throw `No thumbnail found (${error})`;
@@ -138,7 +104,6 @@ function getSite(newUrl) {
 }
 
 async function getImageUrlCustom(newUrl) {
-	console.log('getImageUrlCustom', newUrl);
 	const site = getSite(newUrl);
 	if (site.soundcloud && newUrl === location.href) {
 		// would be easier to grab the <meta og:image> element, but that does
@@ -180,7 +145,6 @@ async function getImageUrlCustom(newUrl) {
 			return googleUserContentUrl(iurl);
 		}
 	} else if (site.youtube) {
-		console.log('newUrl === location.href', newUrl === location.href);
 		const id = new URL(newUrl).searchParams.get('v');
 		return await getYouTubeThumbnail(id);
 	} else if (site.spotify && newUrl === location.href) {
@@ -385,7 +349,6 @@ thumbnailGrabber.addEventListener('click', async function (e) {
 				notify('Copied');
 			}
 		} catch (error) {
-			console.log({error})
 			console.error('Error copying thumbnail', error);
 			notify(`Error copying thumbnail: ${error}`);
 		}
