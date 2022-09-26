@@ -1,6 +1,6 @@
 # Changelog
 
-## Next
+## 1.3.0 - 2022 Sep 26
 - Add Firefox support
 - Fix YouTube thumbnail quality selection
 
