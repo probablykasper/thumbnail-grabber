@@ -30,7 +30,7 @@
   max-width: 250px;
   z-index: 10000;
   margin: 20px;
-  padding: 20px;
+  padding: 18px 20px;
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.23);
   animation: notification 5s forwards;
   transition: all 0.24s cubic-bezier(0.4, 0, 0.2, 1);

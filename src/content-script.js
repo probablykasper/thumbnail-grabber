@@ -72,6 +72,7 @@ function notify(msg) {
 }
 
 async function getYouTubeThumbnail(id) {
+	console.log('getYouTubeThumbnail');
 	const urls = [
 		`https://img.youtube.com/vi/${id}/maxresdefault.jpg`,
 		`https://img.youtube.com/vi/${id}/hqdefault.jpg`,
@@ -79,8 +80,14 @@ async function getYouTubeThumbnail(id) {
 	];
 	const urlPromises = urls.map((url) => {
 		return async function () {
-			await xhr(url, 'GET', 'blob');
-			return url;
+			try {
+				// await xhr(url, 'blob');
+				await fetch(url);
+				return url;
+			} catch (error) {
+				console.log('thumbnail unavailable?', error)
+				throw error;
+			}
 		};
 	});
 	let error = '';
@@ -131,6 +138,7 @@ function getSite(newUrl) {
 }
 
 async function getImageUrlCustom(newUrl) {
+	console.log('getImageUrlCustom', newUrl);
 	const site = getSite(newUrl);
 	if (site.soundcloud && newUrl === location.href) {
 		// would be easier to grab the <meta og:image> element, but that does
@@ -172,16 +180,9 @@ async function getImageUrlCustom(newUrl) {
 			return googleUserContentUrl(iurl);
 		}
 	} else if (site.youtube) {
-		if (newUrl === location.href) {
-			// youtube updates the schemaObject when we navigate to new pages
-			const schemaObject = JSON.parse(
-				document.getElementById('scriptTag').text,
-			);
-			return schemaObject.thumbnailUrl[0];
-		} else {
-			const id = new URL(newUrl).searchParams.get('v');
-			return await getYouTubeThumbnail(id);
-		}
+		console.log('newUrl === location.href', newUrl === location.href);
+		const id = new URL(newUrl).searchParams.get('v');
+		return await getYouTubeThumbnail(id);
 	} else if (site.spotify && newUrl === location.href) {
 		const coverEl =
 			document.querySelector(
@@ -213,7 +214,8 @@ async function getImageUrlCustom(newUrl) {
 async function getOembedImageUrl(newUrl) {
 	const origin = new URL(newUrl).origin;
 	const oembedUrl = `${origin}/oembed?format=json&url=${newUrl}`;
-	const oembed = await xhr(oembedUrl, 'GET', 'json');
+	const response = await fetch(oembedUrl);
+	const oembed = await response.json();
 	if (!oembed) {
 		return;
 	}
@@ -278,17 +280,18 @@ function keydownEventListener(e) {
 		close();
 	}
 }
-function copyEventListener(e) {
+async function copyEventListener(e) {
 	e.preventDefault();
-	copy(lastImageUrl)
-		.then(() => {
-			close();
-		})
-		.catch((error) => {
-			console.error(`Error copying thumbnail: ${error}`);
-			notify(`Error copying thumbnail: ${error}`);
-			close();
-		});
+	try {
+		const result = await copy(lastImageUrl)
+		if (result && result.as) {
+			notify(`Copied as ${result.as}`);
+		}
+		close();
+	} catch (error) {
+		console.error('Error copying thumbnail', error);
+		notify(`Error copying thumbnail: ${error}`);
+	}
 }
 async function open() {
 	document.addEventListener('keydown', keydownEventListener);
@@ -346,11 +349,15 @@ chrome.runtime.onMessage.addListener(async function (
 	} else if (msg.type === 'copy') {
 		try {
 			const imageUrl = await setup(msg.externalUrl || location.href);
-			await copy(imageUrl);
-			notify('Copied');
+			const result = await copy(imageUrl);
+			if (result && result.as) {
+				notify(`Copied as ${result.as}`);
+			} else {
+				notify('Copied');
+			}
 		} catch (error) {
+			console.error('Error copying thumbnail', error);
 			notify(`Error copying thumbnail: ${error}`);
-			console.error(`Error copying thumbnail: ${error}`);
 		}
 		if (thumbnailGrabber.style.display !== 'none') {
 			close();
@@ -371,11 +378,16 @@ thumbnailGrabber.addEventListener('click', async function (e) {
 		close();
 	} else if (e.target.textContent === 'COPY') {
 		try {
-			await copy(lastImageUrl);
-			notify('Copied');
-		} catch (err) {
-			console.error(`Error copying thumbnail: ${err}`);
-			notify(`Error copying thumbnail: ${err}`);
+			const result = await copy(lastImageUrl);
+			if (result && result.as) {
+				notify(`Copied as ${result.as}`);
+			} else {
+				notify('Copied');
+			}
+		} catch (error) {
+			console.log({error})
+			console.error('Error copying thumbnail', error);
+			notify(`Error copying thumbnail: ${error}`);
 		}
 		close();
 	} else if (e.target.textContent === 'OPTIONS') {
@@ -386,7 +398,8 @@ thumbnailGrabber.addEventListener('click', async function (e) {
 document.body.appendChild(thumbnailGrabber);
 
 async function download(url, filename) {
-	const imgBlob = await xhr(url, 'GET', 'blob');
+	const imageResponse = await fetch(url);
+	const imgBlob = await imageResponse.blob();
 	const a = document.createElement('a');
 	a.style = 'display: none';
 	document.body.appendChild(a);
@@ -447,11 +460,39 @@ async function copyToClipboard(pngBlob) {
 	]);
 }
 
+async function firefoxCopy(url) {
+		const response = await fetch(url);
+		const arrayBuffer = await response.arrayBuffer();
+		const contentType = response.headers.get('Content-Type');
+		let imageType
+		if (contentType === 'image/jpeg' || contentType === 'image/jpg') {
+			imageType = 'jpeg'
+		} else if (contentType === 'image/png') {
+			imageType = 'png'
+		} else if (url.endsWith('.jpeg') || url.endsWith('.jpg')) {
+			imageType = 'jpeg'
+		} else if (url.endsWith('.png')) {
+			imageType = 'png'
+		} else {
+			throw new Error('Unknown image type')
+		}
+		const error = await chrome.runtime.sendMessage({ type: 'copyblob', arrayBuffer, imageType, });
+		if (!error?.success) {
+			throw new Error('setImageData not supported')
+		}
+}
+
 async function copy(url) {
-	const imgBlob = await xhr(url, 'GET', 'blob');
-	if (url.endsWith('.png')) {
-		await copyToClipboard(imgBlob);
-	} else {
-		await convertToPng(imgBlob);
+	try {
+		await firefoxCopy(url)
+	} catch (_error) {
+		const imageResponse = await fetch(url);
+		const imgBlob = await imageResponse.blob();
+		if (url.endsWith('.png')) {
+			await copyToClipboard(imgBlob);
+		} else {
+			await convertToPng(imgBlob);
+			return { as: 'PNG' }
+		}
 	}
 }

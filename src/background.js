@@ -15,10 +15,16 @@ chrome.browserAction.onClicked.addListener(function (tab) {
 });
 
 chrome.runtime.onMessage.addListener(
-	// eslint-disable-next-line no-unused-vars
 	function (msg, _sender, _sendResponse) {
 		if (msg.type === 'options') {
 			chrome.runtime.openOptionsPage();
+		} else if (msg.type === 'copyblob') {
+			try {
+				browser.clipboard.setImageData(msg.arrayBuffer, msg.imageType);
+				return Promise.resolve({ success: true });
+			} catch (_error) {
+				return Promise.resolve({ success: false });
+			}
 		}
 	},
 );

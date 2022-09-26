@@ -1,3 +1,8 @@
+# Changelog
+
+## Next
+- Add Firefox support
+
 ## 1.2.3 - 2022 Feb 1
 - Remove unnecessary tabs permission
 
