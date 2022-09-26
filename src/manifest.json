@@ -26,7 +26,9 @@
     }
   },
   "web_accessible_resources": [
-    "icon48.png"
+    "icon48.png",
+    "content-script.js",
+    "content-script.css"
   ],
   "permissions": [
     "storage",

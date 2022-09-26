@@ -1,30 +1,22 @@
 {
   "scripts": {
-    "start": "node tasks.js --task extension:watch",
-    "zip": "node tasks.js --task extension:zip",
-    "lint": "eslint . --ignore-pattern build/**/*"
+    "dev": "rm -rf build && parcel watch --config @parcel/config-webextension --host localhost",
+    "build": "rm -rf build && parcel build --config @parcel/config-webextension && gulp zip",
+    "format": "rome format --write src *.js --quote-style single && rome check src *.js --apply-suggested",
+    "check": "rome ci src *.js --quote-style single"
   },
-  "babel": {
-    "plugins": [
-      [
-        "@babel/plugin-transform-runtime",
-        {
-          "corejs": 2
-        }
-      ]
-    ]
+  "targets": {
+    "default": {
+      "source": "src/manifest.json",
+      "distDir": "build",
+      "sourceMap": false
+    }
   },
   "devDependencies": {
-    "@babel/core": "^7.16.12",
-    "eslint": "^8.8.0",
-    "@babel/plugin-transform-runtime": "^7.16.10",
-    "@babel/runtime-corejs2": "^7.16.7",
-    "clarify": "^2.1.0",
-    "colorboy": "^2.1.0",
-    "del": "^6.0.0",
-    "glob": "^7.2.0",
+    "@parcel/config-webextension": "^2.7.0",
+    "gulp": "^4.0.2",
     "gulp-zip": "^5.1.0",
-    "inquirer": "^8.2.0",
-    "parcel-bundler": "^1.12.5"
+    "parcel": "^2.7.0",
+    "rome": "^0.9.2-next"
   }
 }

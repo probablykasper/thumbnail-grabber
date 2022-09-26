@@ -1,6 +1,5 @@
 .DS_Store
 build
-temp-build
-node_modules
-.cache
 dist
+node_modules
+.parcel-cache

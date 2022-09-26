@@ -31,7 +31,7 @@ Files that should not be compiled/copies should be in the `/src/modules` folder.
 ## Commands
 Build `/src` into `/build` and watch for changes. You can then load the `/build` folder as an unpacked extension in your browser.
 ```
-npm run start
+npm run dev
 ```
 
 Zip the extension into `/dist`, ready to be uploaded to the Chrome Web Store and such. You'll be prompted to type in the version number.
