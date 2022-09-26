@@ -1,0 +1,11 @@
+name: CI
+on: [push, pull_request, workflow_dispatch]
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - run: npm install
+      - run: npm run check

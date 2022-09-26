@@ -17,24 +17,31 @@ Easily download/copy/open thumbnails and covers from YouTube, SoundCloud, Spotif
 
 You can click the extension icon, use keyboard shortcuts or right click the page or links. You can customize the keyboard shortcuts, what clicking the extension icon does, and what context menu items are visible.
 
-# Dev Instructions
+## Dev Instructions
 
-## Folder info
-`/src`
-`/src/modules`
-Files that should not be compiled/copies should be in the `/src/modules` folder.
-
-## Setup
-1. Install [Node.js](https://nodejs.org/) (Version 12.11 or later recommended)
+### Setup
+1. Install Node.js
 2. Run `npm install` to install dependencies
 
-## Commands
-Build `/src` into `/build` and watch for changes. You can then load the `/build` folder as an unpacked extension in your browser.
-```
-npm run dev
-```
+### Commands
+- `npm run dev`: Build extension and watch for changes
+- `npm run build`: Build extension and create a zip in `/dist`, ready for distribution to stores
+- `npm run format`: Format code and apply code suggestions
+- `npm run check`: Check code
 
-Zip the extension into `/dist`, ready to be uploaded to the Chrome Web Store and such. You'll be prompted to type in the version number.
-```
-npm run zip
-```
+## Permissions
+- `storage`: For storing the extension's settings
+- `contextMenus`: For the ability to open/copy/download from the right-click menu
+- `activeTab`: For inserting the popup into the current website
+- `clipboardWrite`: For copying thumbnails to the clipboard
+- `<all_urls>`: For checking if a thumbnail URL exists
+- Individual URLs: For showing the download popup on certain websites
+
+### Publish new version
+1. Run `npm run check`
+2. Update `CHANGELOG.md`
+3. Update version in `manifest.json`
+4. Run `npm run build`
+5. Commit with a tag in format "v#.#.#"
+6. Create GitHub release with the extension zip and release notes
+7. Publish to Chrome and Firefox stores

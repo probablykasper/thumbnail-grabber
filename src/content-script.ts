@@ -21,35 +21,32 @@ function notify(msg) {
 	var notificationElement = document.createElement('div');
 	notificationElement.innerHTML = notificationInnerHTML;
 	notificationElement.classList.add('thumbnail-grabber-notification');
-	const lastChild = notificationElement.querySelector('p:last-child')
+	const lastChild = notificationElement.querySelector('p:last-child');
 	if (!(lastChild instanceof HTMLElement)) {
 		throw alert('No p:last-child');
 	}
 	lastChild.textContent = msg;
 
-	const firstChild = notificationElement.querySelector('p:first-child')
+	const firstChild = notificationElement.querySelector('p:first-child');
 	if (!(firstChild instanceof HTMLElement)) {
 		throw alert('No p:first-child');
 	}
-	firstChild.addEventListener(
-		'click',
-		function () {
-			notificationElement.style.animation = 'none';
-			requestAnimationFrame(function () {
-				notificationElement.classList.add(
-					'thumbnail-grabber-notification-removing',
-				);
-				setTimeout(function () {
-					if (notificationElement.parentElement) {
-						notificationElement.parentElement.removeChild(notificationElement);
-					}
-				}, 500);
-			});
-		},
-	);
+	firstChild.addEventListener('click', function () {
+		notificationElement.style.animation = 'none';
+		requestAnimationFrame(function () {
+			notificationElement.classList.add(
+				'thumbnail-grabber-notification-removing',
+			);
+			setTimeout(function () {
+				if (notificationElement.parentElement) {
+					notificationElement.parentElement.removeChild(notificationElement);
+				}
+			}, 500);
+		});
+	});
 
 	var icon = chrome.runtime.getURL('icon48.png');
-	const iconImgElement = notificationElement.querySelector('img')
+	const iconImgElement = notificationElement.querySelector('img');
 	if (!(iconImgElement instanceof HTMLElement)) {
 		throw alert('No iconImgElement');
 	}
@@ -271,7 +268,7 @@ function keydownEventListener(e) {
 async function copyEventListener(e) {
 	e.preventDefault();
 	try {
-		const result = await copy(lastImageUrl)
+		const result = await copy(lastImageUrl);
 		if (result && result.as) {
 			notify(`Copied as ${result.as}`);
 		}
@@ -416,7 +413,7 @@ async function convertToPng(imgBlob): Promise<void> {
 		const canvas = document.createElement('canvas');
 		const ctx = canvas.getContext('2d');
 		if (!ctx) {
-			throw alert('No 2d canvas ctx')
+			throw alert('No 2d canvas ctx');
 		}
 		const imageEl = createImage({ src: imageUrl });
 		imageEl.onload = (e) => {
@@ -458,30 +455,34 @@ async function copyToClipboard(pngBlob) {
 }
 
 async function firefoxCopy(url) {
-		const response = await fetch(url);
-		const arrayBuffer = await response.arrayBuffer();
-		const contentType = response.headers.get('Content-Type');
-		let imageType
-		if (contentType === 'image/jpeg' || contentType === 'image/jpg') {
-			imageType = 'jpeg'
-		} else if (contentType === 'image/png') {
-			imageType = 'png'
-		} else if (url.endsWith('.jpeg') || url.endsWith('.jpg')) {
-			imageType = 'jpeg'
-		} else if (url.endsWith('.png')) {
-			imageType = 'png'
-		} else {
-			throw new Error('Unknown image type')
-		}
-		const error = await chrome.runtime.sendMessage({ type: 'copyblob', arrayBuffer, imageType, });
-		if (!error?.success) {
-			throw new Error('setImageData not supported')
-		}
+	const response = await fetch(url);
+	const arrayBuffer = await response.arrayBuffer();
+	const contentType = response.headers.get('Content-Type');
+	let imageType;
+	if (contentType === 'image/jpeg' || contentType === 'image/jpg') {
+		imageType = 'jpeg';
+	} else if (contentType === 'image/png') {
+		imageType = 'png';
+	} else if (url.endsWith('.jpeg') || url.endsWith('.jpg')) {
+		imageType = 'jpeg';
+	} else if (url.endsWith('.png')) {
+		imageType = 'png';
+	} else {
+		throw new Error('Unknown image type');
+	}
+	const error = await chrome.runtime.sendMessage({
+		type: 'copyblob',
+		arrayBuffer,
+		imageType,
+	});
+	if (!error?.success) {
+		throw new Error('setImageData not supported');
+	}
 }
 
 async function copy(url) {
 	try {
-		await firefoxCopy(url)
+		await firefoxCopy(url);
 	} catch (_error) {
 		const imageResponse = await fetch(url);
 		const imgBlob = await imageResponse.blob();
@@ -489,7 +490,7 @@ async function copy(url) {
 			await copyToClipboard(imgBlob);
 		} else {
 			await convertToPng(imgBlob);
-			return { as: 'PNG' }
+			return { as: 'PNG' };
 		}
 	}
 }

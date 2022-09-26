@@ -14,20 +14,18 @@ chrome.browserAction.onClicked.addListener(function (tab) {
 	action(tab.id, { type: 'open' });
 });
 
-chrome.runtime.onMessage.addListener(
-	function (msg, _sender, _sendResponse) {
-		if (msg.type === 'options') {
-			chrome.runtime.openOptionsPage();
-		} else if (msg.type === 'copyblob') {
-			try {
-				browser.clipboard.setImageData(msg.arrayBuffer, msg.imageType);
-				return Promise.resolve({ success: true });
-			} catch (_error) {
-				return Promise.resolve({ success: false });
-			}
+chrome.runtime.onMessage.addListener(function (msg, _sender, _sendResponse) {
+	if (msg.type === 'options') {
+		chrome.runtime.openOptionsPage();
+	} else if (msg.type === 'copyblob') {
+		try {
+			browser.clipboard.setImageData(msg.arrayBuffer, msg.imageType);
+			return Promise.resolve({ success: true });
+		} catch (_error) {
+			return Promise.resolve({ success: false });
 		}
-	},
-);
+	}
+});
 
 chrome.commands.onCommand.addListener(function (command) {
 	if (['open', 'download', 'copy'].includes(command)) {
