@@ -353,10 +353,15 @@ chrome.runtime.onMessage.addListener(async function (
 	}
 });
 
+thumbnailGrabber.addEventListener('contextmenu', async function (e) {
+	// make sure context menu can be shown
+	e.stopPropagation();
+});
 thumbnailGrabber.addEventListener('click', async function (e) {
 	if (!(e.target instanceof HTMLElement)) {
 		alert('No thumbnailGrabber click target');
 	} else if (e.target === this) {
+		// backdrop clicked
 		close();
 	} else if (e.target.textContent === 'DOWNLOAD') {
 		try {

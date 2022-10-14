@@ -1,5 +1,8 @@
 # Changelog
 
+## Next
+- Fix context menu not showing on Spotify
+
 ## 1.3.0 - 2022 Sep 26
 - Add Firefox support
 - Fix YouTube thumbnail quality selection
