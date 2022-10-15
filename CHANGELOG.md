@@ -1,6 +1,9 @@
 # Changelog
 
 ## Next
+- Add dark mode
+- Improved responsiveness for small screens
+- Slight redesign
 - Fix context menu not showing on Spotify
 
 ## 1.3.0 - 2022 Sep 26

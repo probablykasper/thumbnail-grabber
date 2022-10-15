@@ -26,7 +26,9 @@
   position: fixed;
   top: 0px;
   right: 0px;
-  background-color: #ffffff;
+  background-color: var(--card-bg-color);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--fg-color);
   max-width: 250px;
   z-index: 10000;
   margin: 20px;
@@ -34,10 +36,8 @@
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.23);
   animation: notification 5s forwards;
   transition: all 0.24s cubic-bezier(0.4, 0, 0.2, 1);
-  /* transition-property: transform, opacity; */
   font-family: Rubik, Roboto, Arial, sans-serif;
   font-size: 14px;
-  color: #000000;
   border-radius: 3px;
 }
 
@@ -91,13 +91,27 @@
   font-family: Rubik, Roboto, Arial, sans-serif;
 }
 
+#thumbnail-grabber, .thumbnail-grabber-notification {
+  --card-bg-color: #ffffff;
+  --button-bg-color: #000000;
+  --fg-color: #000000;
+}
+@media (prefers-color-scheme: dark) {
+  #thumbnail-grabber, .thumbnail-grabber-notification {
+    --card-bg-color: #191B20;
+    --button-bg-color: hsl(220deg, 20%, 25%);
+    --fg-color: #ffffff;
+  }
+}
 #thumbnail-grabber-card {
-  background-color: #ffffff;
+  background-color: var(--card-bg-color);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   padding: 27px;
   max-width: 730px;
   margin: auto;
   box-shadow: 0px 3px 20px 0px rgba(0, 0, 0, 0.23);
   border-radius: 3px;
+  min-width: 300px;
 }
 
 #thumbnail-grabber img {
@@ -112,42 +126,26 @@
   display: flex;
   justify-content: center;
   margin-top: 20px;
+  gap: 16px;
 }
 
-#thumbnail-grabber-buttons div {
-  cursor: pointer;
-  padding: 10px 0px;
-  margin: 0px 12px;
-  width: 120px;
-  padding: 12px 0px;
-  position: relative;
-}
-
-#thumbnail-grabber-buttons div:first-child {
-  margin-left: 0px;
-}
-#thumbnail-grabber-buttons div:last-child {
-  margin-right: 0px;
-}
-
-#thumbnail-grabber-buttons div p {
-  color: #ffffff;
-  user-select: none;
-  text-align: center;
-  position: relative;
-  z-index: 1;
+#thumbnail-grabber-buttons button {
+  background-color: transparent;
+  border: none;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+  font-weight: 500;
   font-size: 14px;
-
-  /* fix for soundcloud */
-  line-height: initial;
-  margin-block-start: initial;
-  margin-block-end: initial;
-  margin-inline-start: initial;
-  margin-inline-end: initial;
+  width: 110px;
+  padding: 7px 0px;
+  position: relative;
+  color: #ffffff;
+  text-align: center;
+  z-index: 1;
 }
 
-#thumbnail-grabber-buttons div::before {
+#thumbnail-grabber-buttons button::before {
   content: "";
+  z-index: -1;
   border-radius: 3px;
   pointer-events: none;
   width: 100%;
@@ -156,14 +154,24 @@
   position: absolute;
   top: 0px;
   left: 0px;
-  background: #000000;
+  background-color: var(--button-bg-color);
+  border: 1px solid hsla(0deg, 0%, 100%, 0.1);
   opacity: 0.8;
   transform: skew(-10deg, 0deg);
-  transition: 0.24s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: 180ms ease-out;
   transition-property: transform, opacity;
 }
 
-#thumbnail-grabber-buttons div:hover::before {
-  transform: skew(-10deg, 0deg) translateZ(0px) scaleY(1.1);
+#thumbnail-grabber-buttons button:hover::before {
+  transform: skew(-10deg, 0deg) translateZ(0px) scaleY(1.12);
   opacity: 1;
+}
+
+@media only screen and (max-width: 500px) {
+  #thumbnail-grabber {
+    padding: 20px;
+  }
+  #thumbnail-grabber-card {
+    padding: 20px;
+  }
 }

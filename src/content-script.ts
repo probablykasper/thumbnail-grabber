@@ -3,11 +3,11 @@ thumbnailGrabber.id = 'thumbnail-grabber';
 
 thumbnailGrabber.innerHTML = `
 <div id="thumbnail-grabber-card">
-  <img>
+  <img tabindex="0">
   <div id="thumbnail-grabber-buttons">
-    <div><p>DOWNLOAD</p></div>
-    <div><p>COPY</p></div>
-    <div><p>OPTIONS</p></div>
+    <button tabindex="0">Download</button>
+    <button tabindex="0">Copy</button>
+    <button tabindex="0">Options</button>
   </div>
 </div>
 `;
@@ -90,122 +90,6 @@ function googleUserContentUrl(urlObj) {
 }
 
 var img = thumbnailGrabber.querySelector('img');
-
-function getSite(newUrl) {
-	const url = new URL(newUrl);
-	return {
-		soundcloud: url.hostname.endsWith('soundcloud.com'),
-		youtubeMusic:
-			url.hostname === 'music.youtube.com' &&
-			url.pathname === '/watch' &&
-			url.searchParams.has('v'),
-		youtubeMusicPlaylist:
-			url.hostname === 'music.youtube.com' &&
-			url.pathname === '/playlist' &&
-			url.searchParams.has('list'),
-		youtube:
-			url.hostname.endsWith('youtube.com') &&
-			!url.hostname.includes('music') &&
-			url.pathname === '/watch' &&
-			url.searchParams.has('v'),
-		spotify: url.hostname === 'open.spotify.com',
-	};
-}
-
-async function getImageUrlCustom(newUrl) {
-	const site = getSite(newUrl);
-	if (site.soundcloud && newUrl === location.href) {
-		// would be easier to grab the <meta og:image> element, but that does
-		// not update when we navigate to new pages
-		var coverEl = document.querySelector('.interactive.sc-artwork > span');
-		if (!(coverEl instanceof HTMLElement)) {
-			throw alert('Artwork element not found');
-		}
-		var bgImg = window.getComputedStyle(coverEl).backgroundImage;
-		var bgImgUrl = bgImg.slice(4, -1);
-		if (bgImgUrl.endsWith('"') && bgImgUrl.endsWith('"')) {
-			bgImgUrl = bgImgUrl.slice(1, -1);
-		}
-		return bgImgUrl;
-	} else if (site.youtubeMusic) {
-		if (newUrl !== location.href) {
-			throw 'For YouTube Music, you need to be at the URL';
-		}
-		const coverImg = document.querySelector('.ytmusic-player-bar.image');
-		if (!(coverImg instanceof HTMLImageElement)) {
-			throw alert('Player bar image not found');
-		}
-		const iurl = new URL(coverImg.src);
-		if (iurl.hostname === 'i.ytimg.com') {
-			if (!iurl.pathname.startsWith('/vi/')) {
-				throw "i.ytimg.com url doesn't start with /vi/";
-			}
-			const id = iurl.pathname.substr(4, 11);
-			return await getYouTubeThumbnail(id);
-		} else {
-			return googleUserContentUrl(iurl);
-		}
-	} else if (site.youtubeMusicPlaylist) {
-		if (newUrl !== location.href) {
-			throw 'For YouTube Music, you need to be at the URL';
-		}
-		const coverImg = document.querySelector('#img');
-		if (!(coverImg instanceof HTMLImageElement)) {
-			throw alert('Image element not found');
-		}
-		const iurl = new URL(coverImg.src);
-		if (iurl.hostname === 'i.ytimg.com') {
-			if (iurl.pathname.startsWith('/vi/')) {
-				const id = iurl.pathname.substr(4, 11);
-				return await getYouTubeThumbnail(id);
-			}
-		} else {
-			return googleUserContentUrl(iurl);
-		}
-	} else if (site.youtube) {
-		const id = new URL(newUrl).searchParams.get('v');
-		return await getYouTubeThumbnail(id);
-	} else if (site.spotify && newUrl === location.href) {
-		const coverEl =
-			document.querySelector(
-				'img._5d10f53f6ab203d3259e148b9f1c2278-scss[srcset]',
-			) ||
-			document.querySelector(
-				'.main-view-container__scroll-node-child > section > div:first-child img[srcset]',
-			) ||
-			document.querySelector('.os-content img[srcset]') ||
-			document.querySelector('img._5d10f53f6ab203d3259e148b9f1c2278-scss') ||
-			document.querySelector(
-				'.main-view-container__scroll-node-child > section > div:first-child img',
-			) ||
-			document.querySelector('.os-content img');
-		if (!(coverEl instanceof HTMLImageElement)) {
-			throw alert('Image element not found');
-		}
-		if (coverEl && coverEl.srcset) {
-			// For /album/ urls.
-			const srcset = coverEl.srcset.split(',');
-			// The last src in srcset is the highest res
-			const srcItem = srcset[srcset.length - 1].trim();
-			const srcUrl = srcItem.split(' ')[0];
-			return srcUrl;
-		} else if (coverEl) {
-			// For /playlist/ urls
-			return coverEl.src;
-		}
-	}
-}
-
-async function getOembedImageUrl(newUrl) {
-	const origin = new URL(newUrl).origin;
-	const oembedUrl = `${origin}/oembed?format=json&url=${newUrl}`;
-	const response = await fetch(oembedUrl);
-	const oembed = await response.json();
-	if (!oembed) {
-		return;
-	}
-	return oembed.thumbnail_url;
-}
 
 let lastImageUrl;
 async function getImageUrl(newUrl) {
@@ -498,4 +382,120 @@ async function copy(url) {
 			return { as: 'PNG' };
 		}
 	}
+}
+
+function getSite(newUrl) {
+	const url = new URL(newUrl);
+	return {
+		soundcloud: url.hostname.endsWith('soundcloud.com'),
+		youtubeMusic:
+			url.hostname === 'music.youtube.com' &&
+			url.pathname === '/watch' &&
+			url.searchParams.has('v'),
+		youtubeMusicPlaylist:
+			url.hostname === 'music.youtube.com' &&
+			url.pathname === '/playlist' &&
+			url.searchParams.has('list'),
+		youtube:
+			url.hostname.endsWith('youtube.com') &&
+			!url.hostname.includes('music') &&
+			url.pathname === '/watch' &&
+			url.searchParams.has('v'),
+		spotify: url.hostname === 'open.spotify.com',
+	};
+}
+
+async function getImageUrlCustom(newUrl) {
+	const site = getSite(newUrl);
+	if (site.soundcloud && newUrl === location.href) {
+		// would be easier to grab the <meta og:image> element, but that does
+		// not update when we navigate to new pages
+		var coverEl = document.querySelector('.interactive.sc-artwork > span');
+		if (!(coverEl instanceof HTMLElement)) {
+			throw alert('Artwork element not found');
+		}
+		var bgImg = window.getComputedStyle(coverEl).backgroundImage;
+		var bgImgUrl = bgImg.slice(4, -1);
+		if (bgImgUrl.endsWith('"') && bgImgUrl.endsWith('"')) {
+			bgImgUrl = bgImgUrl.slice(1, -1);
+		}
+		return bgImgUrl;
+	} else if (site.youtubeMusic) {
+		if (newUrl !== location.href) {
+			throw 'For YouTube Music, you need to be at the URL';
+		}
+		const coverImg = document.querySelector('.ytmusic-player-bar.image');
+		if (!(coverImg instanceof HTMLImageElement)) {
+			throw alert('Player bar image not found');
+		}
+		const iurl = new URL(coverImg.src);
+		if (iurl.hostname === 'i.ytimg.com') {
+			if (!iurl.pathname.startsWith('/vi/')) {
+				throw "i.ytimg.com url doesn't start with /vi/";
+			}
+			const id = iurl.pathname.substr(4, 11);
+			return await getYouTubeThumbnail(id);
+		} else {
+			return googleUserContentUrl(iurl);
+		}
+	} else if (site.youtubeMusicPlaylist) {
+		if (newUrl !== location.href) {
+			throw 'For YouTube Music, you need to be at the URL';
+		}
+		const coverImg = document.querySelector('#img');
+		if (!(coverImg instanceof HTMLImageElement)) {
+			throw alert('Image element not found');
+		}
+		const iurl = new URL(coverImg.src);
+		if (iurl.hostname === 'i.ytimg.com') {
+			if (iurl.pathname.startsWith('/vi/')) {
+				const id = iurl.pathname.substr(4, 11);
+				return await getYouTubeThumbnail(id);
+			}
+		} else {
+			return googleUserContentUrl(iurl);
+		}
+	} else if (site.youtube) {
+		const id = new URL(newUrl).searchParams.get('v');
+		return await getYouTubeThumbnail(id);
+	} else if (site.spotify && newUrl === location.href) {
+		const coverEl =
+			document.querySelector(
+				'img._5d10f53f6ab203d3259e148b9f1c2278-scss[srcset]',
+			) ||
+			document.querySelector(
+				'.main-view-container__scroll-node-child > section > div:first-child img[srcset]',
+			) ||
+			document.querySelector('.os-content img[srcset]') ||
+			document.querySelector('img._5d10f53f6ab203d3259e148b9f1c2278-scss') ||
+			document.querySelector(
+				'.main-view-container__scroll-node-child > section > div:first-child img',
+			) ||
+			document.querySelector('.os-content img');
+		if (!(coverEl instanceof HTMLImageElement)) {
+			throw alert('Image element not found');
+		}
+		if (coverEl && coverEl.srcset) {
+			// For /album/ urls.
+			const srcset = coverEl.srcset.split(',');
+			// The last src in srcset is the highest res
+			const srcItem = srcset[srcset.length - 1].trim();
+			const srcUrl = srcItem.split(' ')[0];
+			return srcUrl;
+		} else if (coverEl) {
+			// For /playlist/ urls
+			return coverEl.src;
+		}
+	}
+}
+
+async function getOembedImageUrl(newUrl) {
+	const origin = new URL(newUrl).origin;
+	const oembedUrl = `${origin}/oembed?format=json&url=${newUrl}`;
+	const response = await fetch(oembedUrl);
+	const oembed = await response.json();
+	if (!oembed) {
+		return;
+	}
+	return oembed.thumbnail_url;
 }
