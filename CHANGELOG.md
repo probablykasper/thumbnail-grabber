@@ -1,6 +1,6 @@
 # Changelog
 
-## Next
+## 1.4.0 - 2022 Oct 15
 - Add dark mode
 - Add focus trap
 - Improved responsiveness for small screens
