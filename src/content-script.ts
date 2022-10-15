@@ -1,13 +1,18 @@
 var thumbnailGrabber = document.createElement('div');
 thumbnailGrabber.id = 'thumbnail-grabber';
 
+const buttonText = {
+	download: 'Download',
+	copy: 'Copy',
+	options: 'Options',
+};
 thumbnailGrabber.innerHTML = `
 <div id="thumbnail-grabber-card">
   <img tabindex="0">
   <div id="thumbnail-grabber-buttons">
-    <button tabindex="0">Download</button>
-    <button tabindex="0">Copy</button>
-    <button tabindex="0">Options</button>
+    <button tabindex="0">${buttonText.download}</button>
+    <button tabindex="0">${buttonText.copy}</button>
+    <button tabindex="0">${buttonText.options}</button>
   </div>
 </div>
 `;
@@ -17,19 +22,20 @@ var notificationInnerHTML = `
 <p></p>
 `;
 
-function notify(msg) {
+/** Returns the `msg` */
+function notify(msg: string) {
 	var notificationElement = document.createElement('div');
 	notificationElement.innerHTML = notificationInnerHTML;
 	notificationElement.classList.add('thumbnail-grabber-notification');
 	const lastChild = notificationElement.querySelector('p:last-child');
 	if (!(lastChild instanceof HTMLElement)) {
-		throw alert('No p:last-child');
+		throw notify('No p:last-child');
 	}
 	lastChild.textContent = msg;
 
 	const firstChild = notificationElement.querySelector('p:first-child');
 	if (!(firstChild instanceof HTMLElement)) {
-		throw alert('No p:first-child');
+		throw notify('No p:first-child');
 	}
 	firstChild.addEventListener('click', function () {
 		notificationElement.style.animation = 'none';
@@ -48,7 +54,7 @@ function notify(msg) {
 	var icon = chrome.runtime.getURL('icon48.png');
 	const iconImgElement = notificationElement.querySelector('img');
 	if (!(iconImgElement instanceof HTMLElement)) {
-		throw alert('No iconImgElement');
+		throw notify('No iconImgElement');
 	}
 	iconImgElement.src = icon;
 
@@ -58,9 +64,10 @@ function notify(msg) {
 			notificationElement.parentElement.removeChild(notificationElement);
 		}
 	}, 5000);
+	return msg;
 }
 
-async function getYouTubeThumbnail(id) {
+async function getYouTubeThumbnail(id: string) {
 	const urls = [
 		`https://img.youtube.com/vi/${id}/maxresdefault.jpg`,
 		`https://img.youtube.com/vi/${id}/hqdefault.jpg`,
@@ -78,7 +85,7 @@ async function getYouTubeThumbnail(id) {
 	throw 'No thumbnail found';
 }
 
-function googleUserContentUrl(urlObj) {
+function googleUserContentUrl(urlObj: URL) {
 	// This is a `googleusercontent.com` url, which ends in something
 	// like `=w60-h60-l90-rj`. Not sure what `l90` or `rj` mean, but it seems
 	// to be the same without them. We replace all of this with `=s0` to get
@@ -89,55 +96,50 @@ function googleUserContentUrl(urlObj) {
 	return urlObj.origin + imgPathname + urlObj.search + urlObj.hash;
 }
 
-var img = thumbnailGrabber.querySelector('img');
+let img = thumbnailGrabber.querySelector('img');
+if (!img) {
+	throw notify('Error: No img element');
+}
 
-let lastImageUrl;
-async function getImageUrl(newUrl) {
-	let imageUrl;
+let lastImageUrl: string;
+async function getImageUrl(url: string) {
+	let imageUrl: string | undefined;
 	try {
-		imageUrl = await getImageUrlCustom(newUrl);
+		imageUrl = await getImageUrlCustom(url);
 	} catch (error) {
 		try {
-			imageUrl = await getOembedImageUrl(newUrl);
+			imageUrl = await getOembedImageUrl(url);
 		} catch (_oembedError) {
-			notify(`Error getting thumbnail: ${error}`);
-			console.error(`Error getting thumbnail: ${error}`);
-			return;
+			throw notify(`Error getting thumbnail: ${error}`);
 		}
 	}
 	if (!imageUrl) {
-		imageUrl = await getOembedImageUrl(newUrl);
+		imageUrl = await getOembedImageUrl(url);
 	}
 	if (!imageUrl) {
-		throw 'Could not find any thumbnail';
+		throw notify('Could not find any thumbnail');
 	}
 	lastImageUrl = imageUrl;
 	return imageUrl;
 }
 
-function getFilename(site, imageUrl) {
+function getFilename(site: Site | null, imageUrl?: string) {
 	console.log(site, imageUrl);
-	let filename = 'Thumbnail';
-	if (
-		site.soundcloud ||
-		site.youtubeMusic ||
-		site.youtubeMusicPlaylist ||
-		site.spotify
-	) {
-		filename = 'Cover';
+	let filename = 'Cover';
+	if (site === 'youtube' || site === null) {
+		filename = 'Thumbnail';
 	}
+	imageUrl = imageUrl || '';
 	if (imageUrl.endsWith('.jpg')) {
-		filename = `${filename}.jpg`;
+		return `${filename}.jpg`;
 	} else if (imageUrl.endsWith('.png')) {
-		filename = `${filename}.png`;
+		return `${filename}.png`;
 	} else {
-		filename = `${filename}.jpg`;
+		return `${filename}.jpg`;
 	}
-
-	return filename;
 }
 
-function keydownEventListener(e) {
+function keydownEventListener(e: KeyboardEvent) {
 	if (
 		e.key === 'Escape' &&
 		e.metaKey === false &&
@@ -149,17 +151,14 @@ function keydownEventListener(e) {
 		close();
 	}
 }
-async function copyEventListener(e) {
+async function copyEventListener(e: ClipboardEvent) {
 	e.preventDefault();
 	try {
 		const result = await copy(lastImageUrl);
-		if (result && result.as) {
-			notify(`Copied as ${result.as}`);
-		}
+		notify(`Copied as ${result?.imageType}`);
 		close();
 	} catch (error) {
-		console.error('Error copying thumbnail', error);
-		notify(`Error copying thumbnail: ${error}`);
+		throw notify(`Error copying thumbnail: ${error}`);
 	}
 }
 async function open() {
@@ -177,13 +176,13 @@ function close() {
 }
 close();
 
-let lastFilename;
-async function setup(newUrl) {
-	const imageUrl = await getImageUrl(newUrl);
-	const site = getSite(newUrl);
+let lastFilename: string;
+async function setup(url: string) {
+	const imageUrl = await getImageUrl(url);
+	const site = getSite(url);
 	lastFilename = getFilename(site, imageUrl);
 	if (!img) {
-		throw alert('No img');
+		throw notify('No img');
 	}
 	img.src = imageUrl;
 	return imageUrl;
@@ -203,8 +202,7 @@ chrome.runtime.onMessage.addListener(async function (
 			const imageUrl = await setup(msg.externalUrl || location.href);
 			open(imageUrl);
 		} catch (error) {
-			notify(`Error opening thumbnail: ${error}`);
-			console.error(`Error opening thumbnail: ${error}`);
+			throw notify(`Error opening thumbnail: ${error}`);
 		}
 	} else if (msg.type === 'download') {
 		try {
@@ -212,8 +210,7 @@ chrome.runtime.onMessage.addListener(async function (
 			console.log('DOWNLOAD', imageUrl);
 			await download(imageUrl, lastFilename);
 		} catch (error) {
-			notify(`Error downloading thumbnail: ${error}`);
-			console.error(`Error downloading thumbnail: ${error}`);
+			throw notify(`Error downloading thumbnail: ${error}`);
 		}
 		if (thumbnailGrabber.style.display !== 'none') {
 			close();
@@ -222,14 +219,9 @@ chrome.runtime.onMessage.addListener(async function (
 		try {
 			const imageUrl = await setup(msg.externalUrl || location.href);
 			const result = await copy(imageUrl);
-			if (result && result.as) {
-				notify(`Copied as ${result.as}`);
-			} else {
-				notify('Copied');
-			}
+			notify(`Copied as ${result?.imageType}`);
 		} catch (error) {
-			console.error('Error copying thumbnail', error);
-			notify(`Error copying thumbnail: ${error}`);
+			throw notify(`Error copying thumbnail: ${error}`);
 		}
 		if (thumbnailGrabber.style.display !== 'none') {
 			close();
@@ -243,39 +235,33 @@ thumbnailGrabber.addEventListener('contextmenu', async function (e) {
 });
 thumbnailGrabber.addEventListener('click', async function (e) {
 	if (!(e.target instanceof HTMLElement)) {
-		alert('No thumbnailGrabber click target');
+		throw notify('No thumbnailGrabber click target');
 	} else if (e.target === this) {
 		// backdrop clicked
 		close();
-	} else if (e.target.textContent === 'DOWNLOAD') {
+	} else if (e.target.textContent === buttonText.download) {
 		try {
 			await download(lastImageUrl, lastFilename);
 		} catch (err) {
-			console.error(`Error downloading thumbnail: ${err}`);
-			notify(`Error downloading thumbnail: ${err}`);
+			throw notify(`Error downloading thumbnail: ${err}`);
 		}
 		close();
-	} else if (e.target.textContent === 'COPY') {
+	} else if (e.target.textContent === buttonText.copy) {
 		try {
 			const result = await copy(lastImageUrl);
-			if (result && result.as) {
-				notify(`Copied as ${result.as}`);
-			} else {
-				notify('Copied');
-			}
+			notify(`Copied as ${result?.imageType}`);
 		} catch (error) {
-			console.error('Error copying thumbnail', error);
-			notify(`Error copying thumbnail: ${error}`);
+			throw notify(`Error copying thumbnail: ${error}`);
 		}
 		close();
-	} else if (e.target.textContent === 'OPTIONS') {
+	} else if (e.target.textContent === buttonText.options) {
 		chrome.runtime.sendMessage({ type: 'options' });
 	}
 });
 
 document.body.appendChild(thumbnailGrabber);
 
-async function download(url, filename) {
+async function download(url: string, filename: string) {
 	const imageResponse = await fetch(url);
 	const imgBlob = await imageResponse.blob();
 	const a = document.createElement('a');
@@ -296,7 +282,7 @@ function createImage(options) {
 	return img;
 }
 
-async function convertToPng(imgBlob): Promise<void> {
+async function convertToPng(imgBlob: Blob): Promise<void> {
 	return new Promise((resolve, reject) => {
 		const imageUrl = window.URL.createObjectURL(imgBlob);
 		const canvas = document.createElement('canvas');
@@ -315,6 +301,9 @@ async function convertToPng(imgBlob): Promise<void> {
 			canvas.toBlob(
 				async function (blob) {
 					try {
+						if (!blob) {
+							throw notify('Browser blob error');
+						}
 						await copyToClipboard(blob);
 						resolve();
 					} catch (error) {
@@ -334,7 +323,7 @@ async function convertToPng(imgBlob): Promise<void> {
 	});
 }
 
-async function copyToClipboard(pngBlob) {
+async function copyToClipboard(pngBlob: Blob) {
 	await navigator.clipboard.write([
 		// eslint-disable-next-line no-undef
 		new ClipboardItem({
@@ -343,11 +332,11 @@ async function copyToClipboard(pngBlob) {
 	]);
 }
 
-async function firefoxCopy(url) {
+async function firefoxCopy(url: string) {
 	const response = await fetch(url);
 	const arrayBuffer = await response.arrayBuffer();
 	const contentType = response.headers.get('Content-Type');
-	let imageType;
+	let imageType: string;
 	if (contentType === 'image/jpeg' || contentType === 'image/jpg') {
 		imageType = 'jpeg';
 	} else if (contentType === 'image/png') {
@@ -367,52 +356,72 @@ async function firefoxCopy(url) {
 	if (!error?.success) {
 		throw new Error('setImageData not supported');
 	}
+	return { imageType: imageType.toUpperCase() };
 }
 
-async function copy(url) {
+async function copy(url: string) {
 	try {
-		await firefoxCopy(url);
+		const result = await firefoxCopy(url);
+		return { imageType: result.imageType.toUpperCase() };
 	} catch (_error) {
 		const imageResponse = await fetch(url);
 		const imgBlob = await imageResponse.blob();
-		if (url.endsWith('.png')) {
+		let imageType = imgBlob.type.replace(/^image\//, '');
+		try {
 			await copyToClipboard(imgBlob);
-		} else {
-			await convertToPng(imgBlob);
-			return { as: 'PNG' };
+			return { imageType: imageType.toUpperCase() };
+		} catch (_e) {
+			convertToPng(imgBlob);
+			return { imageType: 'PNG', converted: true };
 		}
 	}
 }
 
-function getSite(newUrl) {
+type Site =
+	| 'soundcloud'
+	| 'youtubeMusic'
+	| 'youtubeMusicPlaylist'
+	| 'youtube'
+	| 'spotify';
+
+function getSite(newUrl: string): Site | null {
 	const url = new URL(newUrl);
-	return {
-		soundcloud: url.hostname.endsWith('soundcloud.com'),
-		youtubeMusic:
-			url.hostname === 'music.youtube.com' &&
-			url.pathname === '/watch' &&
-			url.searchParams.has('v'),
-		youtubeMusicPlaylist:
-			url.hostname === 'music.youtube.com' &&
-			url.pathname === '/playlist' &&
-			url.searchParams.has('list'),
-		youtube:
-			url.hostname.endsWith('youtube.com') &&
-			!url.hostname.includes('music') &&
-			url.pathname === '/watch' &&
-			url.searchParams.has('v'),
-		spotify: url.hostname === 'open.spotify.com',
-	};
+	if (url.hostname.endsWith('soundcloud.com')) {
+		return 'soundcloud';
+	} else if (
+		url.hostname === 'music.youtube.com' &&
+		url.pathname === '/watch' &&
+		url.searchParams.has('v')
+	) {
+		return 'youtubeMusic';
+	} else if (
+		url.hostname === 'music.youtube.com' &&
+		url.pathname === '/playlist' &&
+		url.searchParams.has('list')
+	) {
+		return 'youtubeMusicPlaylist';
+	} else if (
+		url.hostname.endsWith('youtube.com') &&
+		!url.hostname.includes('music') &&
+		url.pathname === '/watch' &&
+		url.searchParams.has('v')
+	) {
+		return 'youtube';
+	} else if (url.hostname === 'open.spotify.com') {
+		return 'spotify';
+	} else {
+		return null;
+	}
 }
 
-async function getImageUrlCustom(newUrl) {
-	const site = getSite(newUrl);
-	if (site.soundcloud && newUrl === location.href) {
+async function getImageUrlCustom(url: string) {
+	const site = getSite(url);
+	if (site === 'soundcloud' && url === location.href) {
 		// would be easier to grab the <meta og:image> element, but that does
 		// not update when we navigate to new pages
 		var coverEl = document.querySelector('.interactive.sc-artwork > span');
 		if (!(coverEl instanceof HTMLElement)) {
-			throw alert('Artwork element not found');
+			throw notify('Artwork element not found');
 		}
 		var bgImg = window.getComputedStyle(coverEl).backgroundImage;
 		var bgImgUrl = bgImg.slice(4, -1);
@@ -420,45 +429,45 @@ async function getImageUrlCustom(newUrl) {
 			bgImgUrl = bgImgUrl.slice(1, -1);
 		}
 		return bgImgUrl;
-	} else if (site.youtubeMusic) {
-		if (newUrl !== location.href) {
+	} else if (site === 'youtubeMusic') {
+		if (url !== location.href) {
 			throw 'For YouTube Music, you need to be at the URL';
 		}
 		const coverImg = document.querySelector('.ytmusic-player-bar.image');
 		if (!(coverImg instanceof HTMLImageElement)) {
-			throw alert('Player bar image not found');
+			throw notify('Player bar image not found');
 		}
 		const iurl = new URL(coverImg.src);
 		if (iurl.hostname === 'i.ytimg.com') {
 			if (!iurl.pathname.startsWith('/vi/')) {
 				throw "i.ytimg.com url doesn't start with /vi/";
 			}
-			const id = iurl.pathname.substr(4, 11);
+			const id = iurl.pathname.substring(4, 4 + 11);
 			return await getYouTubeThumbnail(id);
 		} else {
 			return googleUserContentUrl(iurl);
 		}
-	} else if (site.youtubeMusicPlaylist) {
-		if (newUrl !== location.href) {
+	} else if (site === 'youtubeMusicPlaylist') {
+		if (url !== location.href) {
 			throw 'For YouTube Music, you need to be at the URL';
 		}
 		const coverImg = document.querySelector('#img');
 		if (!(coverImg instanceof HTMLImageElement)) {
-			throw alert('Image element not found');
+			throw notify('Image element not found');
 		}
 		const iurl = new URL(coverImg.src);
 		if (iurl.hostname === 'i.ytimg.com') {
 			if (iurl.pathname.startsWith('/vi/')) {
-				const id = iurl.pathname.substr(4, 11);
+				const id = iurl.pathname.substring(4, 4 + 11);
 				return await getYouTubeThumbnail(id);
 			}
 		} else {
 			return googleUserContentUrl(iurl);
 		}
-	} else if (site.youtube) {
-		const id = new URL(newUrl).searchParams.get('v');
+	} else if (site === 'youtube' && new URL(url).searchParams.has('v')) {
+		const id = new URL(url).searchParams.get('v')!;
 		return await getYouTubeThumbnail(id);
-	} else if (site.spotify && newUrl === location.href) {
+	} else if (site === 'spotify' && url === location.href) {
 		const coverEl =
 			document.querySelector(
 				'img._5d10f53f6ab203d3259e148b9f1c2278-scss[srcset]',
@@ -473,7 +482,7 @@ async function getImageUrlCustom(newUrl) {
 			) ||
 			document.querySelector('.os-content img');
 		if (!(coverEl instanceof HTMLImageElement)) {
-			throw alert('Image element not found');
+			throw notify('Image element not found');
 		}
 		if (coverEl && coverEl.srcset) {
 			// For /album/ urls.
@@ -489,9 +498,9 @@ async function getImageUrlCustom(newUrl) {
 	}
 }
 
-async function getOembedImageUrl(newUrl) {
-	const origin = new URL(newUrl).origin;
-	const oembedUrl = `${origin}/oembed?format=json&url=${newUrl}`;
+async function getOembedImageUrl(url: string) {
+	const origin = new URL(url).origin;
+	const oembedUrl = `${origin}/oembed?format=json&url=${url}`;
 	const response = await fetch(oembedUrl);
 	const oembed = await response.json();
 	if (!oembed) {
