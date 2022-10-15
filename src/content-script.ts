@@ -161,11 +161,16 @@ async function copyEventListener(e: ClipboardEvent) {
 		throw notify(`Error copying thumbnail: ${error}`);
 	}
 }
+
+let lastActiveElement: Element | null = null;
+const focusTrapInstance = focusTrap(thumbnailGrabber);
+
 async function open() {
 	document.addEventListener('keydown', keydownEventListener);
 	document.addEventListener('copy', copyEventListener);
 	thumbnailGrabber.style.display = '';
 	document.body.classList.add('thumbnail-grabber-prevent-scroll');
+	focusTrapInstance.open(img || thumbnailGrabber);
 }
 
 function close() {
@@ -173,8 +178,55 @@ function close() {
 	document.removeEventListener('copy', copyEventListener);
 	thumbnailGrabber.style.display = 'none';
 	document.body.classList.remove('thumbnail-grabber-prevent-scroll');
+	focusTrapInstance.close();
 }
 close();
+
+function focusTrap(el: HTMLElement) {
+	function getFocusElements() {
+		return el.querySelectorAll(
+			'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+		);
+	}
+
+	function handleKeydown(e: KeyboardEvent) {
+		if (e.key === 'Tab' && e.shiftKey && !e.ctrlKey && !e.metaKey) {
+			const focusElements = getFocusElements();
+			const lastFocusElement = focusElements[focusElements.length - 1];
+			if (
+				focusElements[0] &&
+				document.activeElement?.isSameNode(focusElements[0]) &&
+				lastFocusElement instanceof HTMLElement
+			) {
+				lastFocusElement.focus();
+				e.preventDefault();
+			}
+		} else if (e.key === 'Tab' && !e.shiftKey && !e.ctrlKey && !e.metaKey) {
+			const focusElements = getFocusElements();
+			const lastFocusElement = focusElements[focusElements.length - 1];
+			if (
+				document.activeElement?.isSameNode(lastFocusElement) &&
+				focusElements[0] instanceof HTMLElement
+			) {
+				focusElements[0].focus();
+				e.preventDefault();
+			}
+		}
+	}
+	el.addEventListener('keydown', handleKeydown);
+	return {
+		open(focusElement: HTMLElement) {
+			lastActiveElement = document.activeElement;
+			focusElement.focus();
+		},
+		close() {
+			if (lastActiveElement instanceof HTMLElement) {
+				lastActiveElement.focus();
+			}
+			lastActiveElement = null;
+		},
+	};
+}
 
 let lastFilename: string;
 async function setup(url: string) {
@@ -273,12 +325,9 @@ async function download(url: string, filename: string) {
 	document.body.removeChild(a);
 }
 
-function createImage(options) {
-	options = options || {};
+function createImage(src: string) {
 	const img = Image ? new Image() : document.createElement('img');
-	if (options.src) {
-		img.src = options.src;
-	}
+	img.src = src;
 	return img;
 }
 
@@ -290,7 +339,7 @@ async function convertToPng(imgBlob: Blob): Promise<void> {
 		if (!ctx) {
 			throw alert('No 2d canvas ctx');
 		}
-		const imageEl = createImage({ src: imageUrl });
+		const imageEl = createImage(imageUrl);
 		imageEl.onload = (e) => {
 			if (!(e.target instanceof HTMLImageElement)) {
 				throw alert('No imageEl target');

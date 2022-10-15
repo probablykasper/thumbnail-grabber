@@ -2,6 +2,7 @@
 
 ## Next
 - Add dark mode
+- Add focus trap
 - Improved responsiveness for small screens
 - Slight redesign
 - Fix context menu not showing on Spotify
