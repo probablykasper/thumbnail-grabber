@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.4.1 - 2022 Oct 17
+- Rebuild
+
 ## 1.4.0 - 2022 Oct 15
 - Add dark mode
 - Add focus trap
