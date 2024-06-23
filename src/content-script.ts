@@ -472,6 +472,7 @@ async function getImageUrlCustom(url: string) {
 		if (bgImgUrl.endsWith('"') && bgImgUrl.endsWith('"')) {
 			bgImgUrl = bgImgUrl.slice(1, -1);
 		}
+		bgImgUrl = bgImgUrl.replace('-t500x500.', '-original.');
 		return bgImgUrl;
 	} else if (site === 'youtubeMusic') {
 		if (url !== location.href) {

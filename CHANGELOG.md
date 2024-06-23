@@ -1,6 +1,7 @@
 # Changelog
 
 ## Next
+- Use full quality SoundCloud covers
 - Update to Manifest V3
 - Fix Spotify cover quality
 - Hide broken shortcuts link in Firefox
