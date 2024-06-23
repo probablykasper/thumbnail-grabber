@@ -1,6 +1,6 @@
 # Changelog
 
-## Next
+## 1.5.0 - 2024 Jun 23
 - Use full quality SoundCloud covers
 - Update to Manifest V3
 - Fix Spotify cover quality
