@@ -1,18 +1,18 @@
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/probablykasper/thumbnail-grabber/master/src/icon128.png" width="64">
+	<img src="https://raw.githubusercontent.com/probablykasper/thumbnail-grabber/master/src/icon128.png" width="64">
 </p>
 <h1 align="center" style="margin-top:0px">
-  Thumbnail Grabber
+	Thumbnail Grabber
 </h1>
 <p align="center">Chrome extension for grabbing thumbnails/covers from YouTube, SoundCloud, Spotify and YouTube Music.</p>
 <p align="center">
-  <a href="https://chrome.google.com/webstore/detail/thumbnail-grabber/gbpjnjieenljpncojgiboejmolbihdob">
-    <img alt="Chrome Web Store" src="https://img.shields.io/chrome-web-store/users/gbpjnjieenljpncojgiboejmolbihdob?color=4DB0F2&logo=Google%20Chrome&logoColor=white&style=flat-square">
-  </a>
-  <a href="https://addons.mozilla.org/en-US/firefox/addon/thumbnail-grabber">
-    <img alt="Mozilla Add-on" src="https://img.shields.io/amo/users/thumbnail-grabber?color=orange&logo=Firefox%20Browser&logoColor=white&style=flat-square">
-  </a>
+	<a href="https://chrome.google.com/webstore/detail/thumbnail-grabber/gbpjnjieenljpncojgiboejmolbihdob">
+		<img alt="Chrome Web Store" src="https://img.shields.io/chrome-web-store/users/gbpjnjieenljpncojgiboejmolbihdob?color=4DB0F2&logo=Google%20Chrome&logoColor=white&style=flat-square">
+	</a>
+	<a href="https://addons.mozilla.org/en-US/firefox/addon/thumbnail-grabber">
+		<img alt="Mozilla Add-on" src="https://img.shields.io/amo/users/thumbnail-grabber?color=orange&logo=Firefox%20Browser&logoColor=white&style=flat-square">
+	</a>
 </p>
 <br>
 

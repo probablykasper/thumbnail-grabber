@@ -89,7 +89,7 @@ async function injectIfNotAlready(tabId) {
 	if (chrome.runtime.lastError) {
 		// handle error by do nothing
 	}
-	if (response && response.injected) {
+	if (response?.injected) {
 		// already injected
 		return true;
 	} else {
@@ -111,7 +111,7 @@ chrome.contextMenus.onClicked.addListener((info, _tab) => {
 	if (actionType.endsWith('-link')) {
 		actionType = actionType.slice(0, -'-link'.length);
 	}
-	let url = info.linkUrl || info.pageUrl;
+	const url = info.linkUrl || info.pageUrl;
 	// if the url is incorrect, that error will be handled by the content script
 	if (info.linkUrl) {
 		actionInCurrentTab({ type: actionType, externalUrl: url });

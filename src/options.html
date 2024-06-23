@@ -1,47 +1,57 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-  <head>
-    <title>Thumbnail Grabber Options</title>
-  </head>
-  <body>
-    <h3>Grab method</h3>
-    <select id="grab-method">
-      <option>Open</option>
-      <option>Download</option>
-      <option>Copy to clipboard</option>
-    </select>
+	<head>
+		<title>Thumbnail Grabber Options</title>
+	</head>
+	<body>
+		<h3>Grab method</h3>
+		<select id="grab-method">
+			<option>Open</option>
+			<option>Download</option>
+			<option>Copy to clipboard</option>
+		</select>
 
-    <h3>Context menu</h3>
-    <label><input type="checkbox" id="cx-open">Open thumbnail</label>
-    <br>
-    <label><input type="checkbox" id="cx-download">Download thumbnail</label>
-    <br>
-    <label><input type="checkbox" id="cx-copy">Copy thumbnail</label>
-    <br>
+		<h3>Context menu</h3>
+		<label><input type="checkbox" id="cx-open" />Open thumbnail</label>
+		<br />
+		<label
+			><input type="checkbox" id="cx-download" />Download thumbnail</label
+		>
+		<br />
+		<label><input type="checkbox" id="cx-copy" />Copy thumbnail</label>
+		<br />
 
-    <h3>Tips</h3>
-    <ul>
-      <li><a id="shortcuts-link">Click here to configure keyboard shortcuts</a></li>
-      <li>CTRL/CMD + C copies the thumbnail when the Thumbnail Grabber popup is open.</li>
-      <li>ESC closes the Thumbnail Grabber popup.</li>
-    </ul>
+		<h3>Tips</h3>
+		<ul>
+			<li>
+				<a id="shortcuts-link"
+					>Click here to configure keyboard shortcuts</a
+				>
+			</li>
+			<li>
+				CTRL/CMD + C copies the thumbnail when the Thumbnail Grabber
+				popup is open.
+			</li>
+			<li>ESC closes the Thumbnail Grabber popup.</li>
+		</ul>
 
-    <div id="status" style="display: inline-block; opacity: 0;"></div>
-    <style>
-      @keyframes fade-out { /* referenced in js */
-        0% {
-          opacity: 100;
-        }
-        100% {
-          opacity: 0;
-        }
-      }
-      #shortcuts-link {
-        color: blue;
-        cursor: pointer;
-        text-decoration: underline;
-      }
-    </style>
-    <script src="./options.ts"></script>
-  </body>
+		<div id="status" style="display: inline-block; opacity: 0"></div>
+		<style>
+			@keyframes fade-out {
+				/* referenced in js */
+				0% {
+					opacity: 100;
+				}
+				100% {
+					opacity: 0;
+				}
+			}
+			#shortcuts-link {
+				color: blue;
+				cursor: pointer;
+				text-decoration: underline;
+			}
+		</style>
+		<script src="./options.ts"></script>
+	</body>
 </html>

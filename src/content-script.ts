@@ -1,4 +1,4 @@
-var thumbnailGrabber = document.createElement('div');
+const thumbnailGrabber = document.createElement('div');
 thumbnailGrabber.id = 'thumbnail-grabber';
 
 const buttonText = {
@@ -8,15 +8,15 @@ const buttonText = {
 };
 thumbnailGrabber.innerHTML = `
 <div id="thumbnail-grabber-card">
-  <img tabindex="0">
-  <div id="thumbnail-grabber-buttons">
-    <button tabindex="0">${buttonText.download}</button>
-    <button tabindex="0">${buttonText.copy}</button>
-    <button tabindex="0">${buttonText.options}</button>
-  </div>
+	<img tabindex="0">
+	<div id="thumbnail-grabber-buttons">
+		<button tabindex="0">${buttonText.download}</button>
+		<button tabindex="0">${buttonText.copy}</button>
+		<button tabindex="0">${buttonText.options}</button>
+	</div>
 </div>
 `;
-var notificationInnerHTML = `
+const notificationInnerHTML = `
 <p>x</p>
 <img></img>
 <p></p>
@@ -24,7 +24,7 @@ var notificationInnerHTML = `
 
 /** Returns the `msg` */
 function notify(msg: string) {
-	var notificationElement = document.createElement('div');
+	const notificationElement = document.createElement('div');
 	notificationElement.innerHTML = notificationInnerHTML;
 	notificationElement.classList.add('thumbnail-grabber-notification');
 	const lastChild = notificationElement.querySelector('p:last-child');
@@ -37,13 +37,13 @@ function notify(msg: string) {
 	if (!(firstChild instanceof HTMLElement)) {
 		throw notify('No p:first-child');
 	}
-	firstChild.addEventListener('click', function () {
+	firstChild.addEventListener('click', () => {
 		notificationElement.style.animation = 'none';
-		requestAnimationFrame(function () {
+		requestAnimationFrame(() => {
 			notificationElement.classList.add(
 				'thumbnail-grabber-notification-removing',
 			);
-			setTimeout(function () {
+			setTimeout(() => {
 				if (notificationElement.parentElement) {
 					notificationElement.parentElement.removeChild(notificationElement);
 				}
@@ -51,7 +51,7 @@ function notify(msg: string) {
 		});
 	});
 
-	var icon = chrome.runtime.getURL('icon48.png');
+	const icon = chrome.runtime.getURL('icon48.png');
 	const iconImgElement = notificationElement.querySelector('img');
 	if (!(iconImgElement instanceof HTMLElement)) {
 		throw notify('No iconImgElement');
@@ -59,7 +59,7 @@ function notify(msg: string) {
 	iconImgElement.src = icon;
 
 	document.body.appendChild(notificationElement);
-	setTimeout(function () {
+	setTimeout(() => {
 		if (notificationElement.parentElement) {
 			notificationElement.parentElement.removeChild(notificationElement);
 		}
@@ -92,11 +92,11 @@ function googleUserContentUrl(urlObj: URL) {
 	// the original size of the image.
 	// Info about `googleusercontent.com` urls:
 	// https://sites.google.com/site/picasaresources/Home/Picasa-FAQ/google-photos-1/how-to/how-to-get-a-direct-link-to-an-image
-	var imgPathname = `${urlObj.pathname.split('=')[0]}=s0`;
+	const imgPathname = `${urlObj.pathname.split('=')[0]}=s0`;
 	return urlObj.origin + imgPathname + urlObj.search + urlObj.hash;
 }
 
-let img = thumbnailGrabber.querySelector('img');
+const img = thumbnailGrabber.querySelector('img');
 if (!img) {
 	throw notify('Error: No img element');
 }
@@ -123,13 +123,12 @@ async function getImageUrl(url: string) {
 	return imageUrl;
 }
 
-function getFilename(site: Site | null, imageUrl?: string) {
+function getFilename(site: Site | null, imageUrl = '') {
 	console.log(site, imageUrl);
 	let filename = 'Cover';
 	if (site === 'youtube' || site === null) {
 		filename = 'Thumbnail';
 	}
-	imageUrl = imageUrl || '';
 	if (imageUrl.endsWith('.jpg')) {
 		return `${filename}.jpg`;
 	} else if (imageUrl.endsWith('.png')) {
@@ -240,11 +239,7 @@ async function setup(url: string) {
 	return imageUrl;
 }
 
-chrome.runtime.onMessage.addListener(async function (
-	msg,
-	_sender,
-	sendResponse,
-) {
+chrome.runtime.onMessage.addListener(async (msg, _sender, sendResponse) => {
 	if (msg.type === 'existance-check') {
 		sendResponse({ injected: true });
 	} else if (msg.type === 'notify') {
@@ -281,7 +276,7 @@ chrome.runtime.onMessage.addListener(async function (
 	}
 });
 
-thumbnailGrabber.addEventListener('contextmenu', async function (e) {
+thumbnailGrabber.addEventListener('contextmenu', async (e) => {
 	// make sure context menu can be shown
 	e.stopPropagation();
 });
@@ -318,7 +313,7 @@ async function download(url: string, filename: string) {
 	const imgBlob = await imageResponse.blob();
 	const a = document.createElement('a');
 	document.body.appendChild(a);
-	var blobUrl = window.URL.createObjectURL(imgBlob);
+	const blobUrl = window.URL.createObjectURL(imgBlob);
 	a.href = blobUrl;
 	a.download = filename;
 	a.click();
@@ -348,7 +343,7 @@ async function convertToPng(imgBlob: Blob): Promise<void> {
 			canvas.height = e.target.height;
 			ctx.drawImage(e.target, 0, 0, e.target.width, e.target.height);
 			canvas.toBlob(
-				async function (blob) {
+				async (blob) => {
 					try {
 						if (!blob) {
 							throw notify('Browser blob error');
@@ -415,7 +410,7 @@ async function copy(url: string) {
 	} catch (_error) {
 		const imageResponse = await fetch(url);
 		const imgBlob = await imageResponse.blob();
-		let imageType = imgBlob.type.replace(/^image\//, '');
+		const imageType = imgBlob.type.replace(/^image\//, '');
 		try {
 			await copyToClipboard(imgBlob);
 			return { imageType: imageType.toUpperCase() };
@@ -468,12 +463,12 @@ async function getImageUrlCustom(url: string) {
 	if (site === 'soundcloud' && url === location.href) {
 		// would be easier to grab the <meta og:image> element, but that does
 		// not update when we navigate to new pages
-		var coverEl = document.querySelector('.interactive.sc-artwork > span');
+		const coverEl = document.querySelector('.interactive.sc-artwork > span');
 		if (!(coverEl instanceof HTMLElement)) {
 			throw notify('Artwork element not found');
 		}
-		var bgImg = window.getComputedStyle(coverEl).backgroundImage;
-		var bgImgUrl = bgImg.slice(4, -1);
+		const bgImg = window.getComputedStyle(coverEl).backgroundImage;
+		let bgImgUrl = bgImg.slice(4, -1);
 		if (bgImgUrl.endsWith('"') && bgImgUrl.endsWith('"')) {
 			bgImgUrl = bgImgUrl.slice(1, -1);
 		}
@@ -514,7 +509,7 @@ async function getImageUrlCustom(url: string) {
 			return googleUserContentUrl(iurl);
 		}
 	} else if (site === 'youtube' && new URL(url).searchParams.has('v')) {
-		const id = new URL(url).searchParams.get('v')!;
+		const id = new URL(url).searchParams.get('v') as string;
 		return await getYouTubeThumbnail(id);
 	} else if (site === 'spotify' && url === location.href) {
 		const coverEl =
@@ -533,7 +528,7 @@ async function getImageUrlCustom(url: string) {
 		if (!(coverEl instanceof HTMLImageElement)) {
 			throw notify('Image element not found');
 		}
-		if (coverEl && coverEl.srcset) {
+		if (coverEl?.srcset) {
 			// For /album/ urls.
 			const srcset = coverEl.srcset.split(',');
 			// The last src in srcset is the highest res
