@@ -1,7 +1,7 @@
 {
 	"scripts": {
 		"dev": "rm -rf build && parcel watch --config @parcel/config-webextension --host localhost",
-		"build": "rm -rf build && rm -rf build-firefox && parcel build --config @parcel/config-webextension --no-content-hash --no-cache  && node ./zip.js",
+		"build": "rm -rf build && rm -rf build-firefox && parcel build --config @parcel/config-webextension --no-content-hash --no-cache --no-optimize && node ./zip.js",
 		"format": "biome check --write src *.js",
 		"check": "biome ci src *.js"
 	},
