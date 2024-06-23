@@ -1,54 +1,49 @@
 {
-  "manifest_version": 2,
-  "name": "Thumbnail Grabber",
-  "version": "1.4.1",
-  "description": "Download thumbnails and covers from YouTube, SoundCloud, Spotify, YouTube Music and more",
-  "background": {
-    "scripts": [
-      "background.ts"
-    ],
-    "persistent": false
-  },
-  "options_ui": {
-    "page": "options.html",
-    "open_in_tab": false
-  },
-  "icons": {
-    "16": "icon16.png",
-    "48": "icon48.png",
-    "128": "icon128.png"
-  },
-  "browser_action": {
-    "default_icon": {
-      "16": "icon16.png",
-      "48": "icon48.png",
-      "128": "icon128.png"
-    }
-  },
-  "web_accessible_resources": [
-    "icon48.png",
-    "content-script.ts",
-    "content-script.css"
-  ],
-  "permissions": [
-    "storage",
-    "contextMenus",
-    "activeTab",
-    "clipboardWrite",
-    "<all_urls>",
-    "*://i.ytimg.com/*",
-    "*://img.youtube.com/*",
-    "*://i1.sndcdn.com/*"
-  ],
-  "commands": {
-    "open": {
-      "description": "Open the Thumbnail Grabber popup on the current page"
-    },
-    "download": {
-      "description": "Download the thumbnail of the current page"
-    },
-    "copy": {
-      "description": "Copy the thumbnail of the current page to clipboard"
-    }
-  }
+	"manifest_version": 3,
+	"name": "Thumbnail Grabber",
+	"version": "1.4.1",
+	"description": "Download thumbnails and covers from YouTube, SoundCloud, Spotify, YouTube Music and more",
+	"background": {
+		"service_worker": "service_worker.ts"
+	},
+	"options_ui": {
+		"page": "options.html",
+		"open_in_tab": false
+	},
+	"icons": {
+		"16": "icon16.png",
+		"48": "icon48.png",
+		"128": "icon128.png"
+	},
+	"action": {
+		"default_icon": {
+			"16": "icon16.png",
+			"48": "icon48.png",
+			"128": "icon128.png"
+		}
+	},
+	"web_accessible_resources": [
+		{
+			"resources": ["icon48.png", "content-script.ts", "content-script.css"],
+			"matches": ["<all_urls>"]
+		}
+	],
+	"permissions": ["storage", "contextMenus", "activeTab", "clipboardWrite"],
+	"host_permissions": [
+		"<all_urls>",
+		"*://i.ytimg.com/*",
+		"*://img.youtube.com/*",
+		"*://i1.sndcdn.com/*"
+	],
+	"commands": {
+		"open": {
+			"description": "Open the Thumbnail Grabber popup on the current page"
+		},
+		"download": {
+			"description": "Download the thumbnail of the current page"
+		},
+		"copy": {
+			"description": "Copy the thumbnail of the current page to clipboard"
+		}
+	}
 }
