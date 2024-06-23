@@ -1,5 +1,8 @@
 # Changelog
 
+## Next
+- Update to Manifest V3
+
 ## 1.4.1 - 2022 Oct 17
 - Rebuild
 

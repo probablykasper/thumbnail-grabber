@@ -83,12 +83,13 @@ async function createContextMenus() {
 }
 
 async function injectIfNotAlready(tabId) {
-	const response = await chrome.tabs.sendMessage(tabId, {
-		type: 'existance-check',
-	});
-	if (chrome.runtime.lastError) {
-		// handle error by do nothing
-	}
+	const response = await chrome.tabs
+		.sendMessage(tabId, {
+			type: 'existance-check',
+		})
+		.catch(() => {
+			// handle error by do nothing
+		});
 	if (response?.injected) {
 		// already injected
 		return true;
