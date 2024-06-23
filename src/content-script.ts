@@ -513,18 +513,18 @@ async function getImageUrlCustom(url: string) {
 		return await getYouTubeThumbnail(id);
 	} else if (site === 'spotify' && url === location.href) {
 		const coverEl =
+			document.querySelector('img.zmOtW0vqqn1qpZrtQ_w9[srcset]') ||
+			document.querySelector('[aria-label="View album artwork"] img[srcset]') ||
 			document.querySelector(
-				'img._5d10f53f6ab203d3259e148b9f1c2278-scss[srcset]',
+				'.main-view-container__scroll-node-child section > div:first-child img[srcset]',
+			) ||
+			document.querySelector('img.zmOtW0vqqn1qpZrtQ_w9') ||
+			document.querySelector(
+				'[aria-label="View album artwork"] img.zmOtW0vqqn1qpZrtQ_w9',
 			) ||
 			document.querySelector(
-				'.main-view-container__scroll-node-child > section > div:first-child img[srcset]',
-			) ||
-			document.querySelector('.os-content img[srcset]') ||
-			document.querySelector('img._5d10f53f6ab203d3259e148b9f1c2278-scss') ||
-			document.querySelector(
-				'.main-view-container__scroll-node-child > section > div:first-child img',
-			) ||
-			document.querySelector('.os-content img');
+				'.main-view-container__scroll-node-child section > div:first-child img',
+			);
 		if (!(coverEl instanceof HTMLImageElement)) {
 			throw notify('Image element not found');
 		}
