@@ -2,6 +2,11 @@
 	"manifest_version": 3,
 	"name": "Thumbnail Grabber",
 	"version": "1.5.0",
+	"browser_specific_settings": {
+		"gecko": {
+			"id": "{3c48dc68-49cb-4c44-808f-eacfb947f874}"
+		}
+	},
 	"description": "Download thumbnails and covers from YouTube, SoundCloud, Spotify, YouTube Music and more",
 	"background": {
 		"service_worker": "service_worker.ts"
