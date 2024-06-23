@@ -1,7 +1,7 @@
 {
 	"manifest_version": 3,
 	"name": "Thumbnail Grabber",
-	"version": "1.5.1",
+	"version": "1.5.2",
 	"browser_specific_settings": {
 		"gecko": {
 			"id": "{3c48dc68-49cb-4c44-808f-eacfb947f874}"

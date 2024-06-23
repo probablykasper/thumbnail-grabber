@@ -1,6 +1,6 @@
 # Changelog
 
-## Next
+## 1.5.2 - 2024 Jun 23
 - Fix missing scripting permission
 
 ## 1.5.1 - 2024 Jun 23
