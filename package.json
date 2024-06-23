@@ -1,14 +1,19 @@
 {
 	"scripts": {
 		"dev": "rm -rf build && parcel watch --config @parcel/config-webextension --host localhost",
-		"build": "rm -rf build && parcel build --config @parcel/config-webextension && gulp zip",
+		"build": "rm -rf build && rm -rf build-firefox && parcel build --config @parcel/config-webextension --no-content-hash --no-cache  && node ./zip.js",
 		"format": "biome check --write src *.js",
 		"check": "biome ci src *.js"
 	},
 	"targets": {
-		"default": {
-			"source": "src/manifest.json",
-			"distDir": "build",
+		"chrome": {
+			"source": "src/chrome/manifest.json",
+			"distDir": "build/chrome",
+			"sourceMap": false
+		},
+		"firefox": {
+			"source": "src/firefox/manifest.json",
+			"distDir": "build/firefox",
 			"sourceMap": false
 		}
 	},
@@ -17,8 +22,10 @@
 		"@parcel/config-webextension": "^2.12.0",
 		"@types/chrome": "^0.0.268",
 		"@types/firefox-webext-browser": "^120.0.4",
-		"gulp": "^4.0.2",
-		"gulp-zip": "^5.1.0",
-		"parcel": "^2.12.0"
+		"parcel": "^2.12.0",
+		"zip-local": "^0.3.5"
+	},
+	"dependencies": {
+		"archiver": "^7.0.1"
 	}
 }
