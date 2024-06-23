@@ -37,7 +37,13 @@
 			"matches": ["<all_urls>"]
 		}
 	],
-	"permissions": ["storage", "contextMenus", "activeTab", "clipboardWrite"],
+	"permissions": [
+		"scripting",
+		"storage",
+		"contextMenus",
+		"activeTab",
+		"clipboardWrite"
+	],
 	"host_permissions": [
 		"<all_urls>",
 		"*://i.ytimg.com/*",

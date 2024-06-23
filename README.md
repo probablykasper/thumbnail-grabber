@@ -35,6 +35,7 @@ You can click the extension icon, use keyboard shortcuts or right click the page
 - `npm run check`: Check code
 
 ## Permissions
+- `scripting`: For finding & displaying thumbnails
 - `storage`: For storing the extension's settings
 - `contextMenus`: For the ability to open/copy/download from the right-click menu
 - `activeTab`: For inserting the popup into the current website

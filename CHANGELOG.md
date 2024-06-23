@@ -1,5 +1,8 @@
 # Changelog
 
+## Next
+- Fix missing scripting permission
+
 ## 1.5.1 - 2024 Jun 23
 - Fix Firefox manifest
 
