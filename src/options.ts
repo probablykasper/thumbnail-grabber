@@ -63,6 +63,12 @@ document.getElementById('cx-open').addEventListener('click', save);
 document.getElementById('cx-download').addEventListener('click', save);
 document.getElementById('cx-copy').addEventListener('click', save);
 
+const firefox = navigator.userAgent.indexOf('Firefox') !== -1;
+if (firefox) {
+	document.getElementById('shortcuts-link').parentElement.style.display =
+		'none';
+}
+
 document.getElementById('shortcuts-link').addEventListener('click', () => {
 	chrome.tabs.create({
 		url: 'chrome://extensions/configureCommands',
