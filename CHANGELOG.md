@@ -1,6 +1,6 @@
 # Changelog
 
-## Next
+## 1.5.1 - 2024 Jun 23
 - Fix Firefox manifest
 
 ## 1.5.0 - 2024 Jun 23
