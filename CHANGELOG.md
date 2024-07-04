@@ -1,5 +1,8 @@
 # Changelog
 
+## Next
+- Fix popup not opening
+
 ## 1.5.2 - 2024 Jun 23
 - Fix missing scripting permission
 

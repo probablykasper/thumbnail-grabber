@@ -97,11 +97,11 @@ async function injectIfNotAlready(tabId) {
 		// not yet injected, so do that
 		await chrome.scripting.executeScript({
 			target: { tabId: tabId },
-			files: ['content-script.js'],
+			files: ['up_/content-script.js'],
 		});
 		await chrome.scripting.insertCSS({
 			target: { tabId: tabId },
-			files: ['content-script.css'],
+			files: ['up_/content-script.css'],
 		});
 		return false;
 	}
