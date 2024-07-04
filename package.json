@@ -1,6 +1,6 @@
 {
 	"name": "Thumbnail Grabber",
-	"version": "1.5.2",
+	"version": "1.5.3",
 	"description": "Download thumbnails and covers from YouTube, SoundCloud, Spotify, YouTube Music and more",
 	"type": "module",
 	"private": true,

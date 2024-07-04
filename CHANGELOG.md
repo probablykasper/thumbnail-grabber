@@ -1,6 +1,6 @@
 # Changelog
 
-## Next
+## 1.5.3 - 2024 Jul 4
 - Fix popup not opening
 
 ## 1.5.2 - 2024 Jun 23
