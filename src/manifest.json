@@ -1,38 +1,38 @@
 {
 	"manifest_version": 3,
-	"name": "Thumbnail Grabber",
-	"version": "1.5.2",
-	"browser_specific_settings": {
+	"{{firefox}}.browser_specific_settings": {
 		"gecko": {
 			"id": "{3c48dc68-49cb-4c44-808f-eacfb947f874}"
 		}
 	},
-	"description": "Download thumbnails and covers from YouTube, SoundCloud, Spotify, YouTube Music and more",
-	"background": {
-		"scripts": ["../service_worker.ts"]
+	"{{chrome}}.background": {
+		"service_worker": "src/service_worker.ts"
+	},
+	"{{firefox}}.background": {
+		"scripts": ["src/service_worker.ts"]
 	},
 	"options_ui": {
-		"page": "../options.html",
+		"page": "src/options.html",
 		"open_in_tab": false
 	},
 	"icons": {
-		"16": "../icon16.png",
-		"48": "../icon48.png",
-		"128": "../icon128.png"
+		"16": "icon16.png",
+		"48": "icon48.png",
+		"128": "icon128.png"
 	},
 	"action": {
 		"default_icon": {
-			"16": "../icon16.png",
-			"48": "../icon48.png",
-			"128": "../icon128.png"
+			"16": "icon16.png",
+			"48": "icon48.png",
+			"128": "icon128.png"
 		}
 	},
 	"web_accessible_resources": [
 		{
 			"resources": [
-				"../icon48.png",
-				"../content-script.ts",
-				"../content-script.css"
+				"src/icon48.png",
+				"src/content-script.ts",
+				"src/content-script.css"
 			],
 			"matches": ["<all_urls>"]
 		}

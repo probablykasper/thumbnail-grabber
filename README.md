@@ -46,7 +46,7 @@ You can click the extension icon, use keyboard shortcuts or right click the page
 ### Publish new version
 1. Run `npm run check`
 2. Update `CHANGELOG.md`
-3. Update version in `manifest.json`
+3. Update version in `package.json`
 4. Run `npm run build`
 5. Commit with a tag in format "v#.#.#"
 6. Create GitHub release with the extension zip and release notes

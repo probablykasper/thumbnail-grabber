@@ -1,13 +1,13 @@
-const fs = require('node:fs');
-const path = require('node:path');
-const zipper = require('zip-local');
+import fs from 'node:fs';
+import path from 'node:path';
+import zipper from 'zip-local';
 
 async function zip(dir, zip_filename) {
 	console.log(path.join('dist', dir));
 	zipper.sync.zip(dir).compress().save(`dist/${zip_filename}`);
 }
 
-const manifest = JSON.parse(fs.readFileSync('src/chrome/manifest.json'));
+const manifest = JSON.parse(fs.readFileSync('package.json'));
 if (!fs.existsSync('dist')) {
 	fs.mkdirSync('dist');
 }

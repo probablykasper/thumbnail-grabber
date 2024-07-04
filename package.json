@@ -1,31 +1,23 @@
 {
+	"name": "Thumbnail Grabber",
+	"version": "1.5.2",
+	"description": "Download thumbnails and covers from YouTube, SoundCloud, Spotify, YouTube Music and more",
+	"type": "module",
+	"private": true,
 	"scripts": {
-		"dev": "rm -rf build && parcel watch --config @parcel/config-webextension --host localhost",
-		"build": "rm -rf build && rm -rf build-firefox && parcel build --config @parcel/config-webextension --no-content-hash --no-cache --no-optimize && node ./zip.js",
+		"dev": "vite dev",
+		"dev-firefox": "TARGET=firefox vite dev",
+		"build": "vite build && TARGET=firefox vite build && node ./zip.js",
 		"format": "biome check --write src *.js",
 		"check": "biome ci src *.js"
 	},
-	"targets": {
-		"chrome": {
-			"source": "src/chrome/manifest.json",
-			"distDir": "build/chrome",
-			"sourceMap": false
-		},
-		"firefox": {
-			"source": "src/firefox/manifest.json",
-			"distDir": "build/firefox",
-			"sourceMap": false
-		}
-	},
 	"devDependencies": {
 		"@biomejs/biome": "^1.8.2",
-		"@parcel/config-webextension": "^2.12.0",
 		"@types/chrome": "^0.0.268",
 		"@types/firefox-webext-browser": "^120.0.4",
-		"parcel": "^2.12.0",
+		"typescript": "^5.5.3",
+		"vite": "^5.3.3",
+		"vite-plugin-web-extension": "^4.1.4",
 		"zip-local": "^0.3.5"
-	},
-	"dependencies": {
-		"archiver": "^7.0.1"
 	}
 }
