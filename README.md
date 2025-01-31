@@ -1,6 +1,6 @@
 
 <p align="center">
-	<img src="https://raw.githubusercontent.com/probablykasper/thumbnail-grabber/master/src/icon128.png" width="64">
+	<img src="https://raw.githubusercontent.com/probablykasper/thumbnail-grabber/master/public/icon128.png" width="64">
 </p>
 <h1 align="center" style="margin-top:0px">
 	Thumbnail Grabber
